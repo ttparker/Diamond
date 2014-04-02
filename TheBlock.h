@@ -11,6 +11,8 @@ class EffectiveHamiltonian;
 class TheBlock
 {
     public:
+        Eigen::MatrixXd primeToRhoBasis;            // change-of-basis matrix
+        
         TheBlock(int m = 0,
                  const Eigen::MatrixXd& hS = Eigen::MatrixXd(),
                  const std::vector<Eigen::MatrixXd>& off0RhoBasisH2 
@@ -19,11 +21,11 @@ class TheBlock
                         = std::vector<Eigen::MatrixXd>(),
                  const std::vector<int>& qNumList = std::vector<int>());
         TheBlock(const Hamiltonian& ham, int mMaxIn);
-        TheBlock nextBlock(int l, TheBlock& compBlock, bool exactDiag = true,
-                           bool infiniteStage = true,
+        TheBlock nextBlock(int l, const TheBlock& compBlock,
+                           bool exactDiag = true, bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
-                                                   // performs each DMRG step
-        void randomSeed();                         // for iDMRG case
+                                                     // performs each DMRG step
+        void randomSeed();                                    // for iDMRG case
         void reflectPredictedPsi();            // when you reach edge of system
         EffectiveHamiltonian createHSuperFinal(const TheBlock& compBlock,
                                                int l, int skips) const;
@@ -42,7 +44,6 @@ class TheBlock
         int m;								// number of states stored in block
         static rmMatrixXd psiGround;
         static int mMax;				// max size of effective Hamiltonian
-        Eigen::MatrixXd primeToRhoBasis;            // change-of-basis matrix
         static bool firstfDMRGStep;
                     // slight abuse of nomenclature - true during iDMRG as well
         

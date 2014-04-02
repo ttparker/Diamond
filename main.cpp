@@ -113,10 +113,14 @@ int main()
                                  * groundStateErrorTolerance / 2);
         int lSFinal = lSys / 2 - 1;         // final length of the system block
         for(int site = skips, end = lSFinal - 1; site < end; site++)    //iDMRG
+        {
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(site,
                                                                rightBlocks[site],
                                                                false);
+            rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
+                                     // copy primeToRhoBasis to reflected block
+        };
         if(nSweeps == 0)
             leftBlocks[lSFinal - 1].randomSeed();
         else
