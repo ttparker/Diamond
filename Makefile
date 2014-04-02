@@ -43,4 +43,4 @@ upload:
 	scp -r *.cpp *.h Makefile $(OTHERS) knot.cnsi.ucsb.edu:~/$(DEST)
 
 download:
-	scp knot.cnsi.ucsb.edu:~/$(SOURCE)/Output/Trial_1 Cluster$(SOURCE)
+	scp knot.cnsi.ucsb.edu:~/$(SOURCE)/Output/* Cluster
