@@ -96,23 +96,51 @@ int main()
                  << "\nBond dimension: " << mMax << "\nNumber of sweeps: "
                  << nSweeps << std::endl << std::endl;
         ham.setParams(couplingConstants, targetQNum, lSys);
-        int skips = 0;
-        for(int runningKeptStates = d * d; runningKeptStates <= mMax; skips++)
+        int skips = 0,
+            runningKeptStates = d * d;
+        for(; runningKeptStates <= mMax; skips++)
             runningKeptStates *= d;  // find how many edge sites can be skipped
-        std::vector<TheBlock> leftBlocks(lSys - 3 - skips), // initialize system
-                              rightBlocks(lSys - 3 - skips);
+        bool oddSize = lSys % 2;
+        int lSFinal,                        // final length of the system block
+            lEFinal;                   // final length of the environment block
+        if(oddSize)
+        {
+            lSFinal = (lSys - 1)/2;
+            lEFinal = (lSys - 3)/2;
+        }
+        else
+            lSFinal = lEFinal = lSys / 2 - 1;
+        bool completeED = false;
+        if(skips + 1 >= lSFinal)
+        {
+            if(skips + 1 == lSFinal && runningKeptStates == mMax * d)
+            {
+                std::cout << "Note: the bond dimension is large enough to "
+                          << "perform exact diagonalization." << std::endl;
+                completeED = true;
+            }
+            else
+            {
+                std::cout << "Error: the bond dimension is larger than "
+                          << "required for exact diagonalization."
+                          << std::endl;
+                continue;
+            };
+        };
+        std::vector<TheBlock> leftBlocks(lSys - 2 - skips),
+                              rightBlocks(lSys - 2 - skips);
+             // initialize system - the last block is only used for odd-size ED
         leftBlocks[0] = rightBlocks[0]
                       = TheBlock(ham, mMax);   // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
+            // note: this iDMRG code assumes parity symmetry of the Hamiltonian
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(site,
                                                                rightBlocks[site]);
-                                        // note: the third argument is not used
-        Sector::setLancTolerance(groundStateErrorTolerance
-                                 * groundStateErrorTolerance / 2);
-        int lSFinal = lSys / 2 - 1;         // final length of the system block
-        for(int site = skips, end = lSFinal - 1; site < end; site++)    //iDMRG
+        Sector::lancTolerance = groundStateErrorTolerance
+                                * groundStateErrorTolerance / 2;
+        for(int site = skips, end = lEFinal - 1; site < end; site++)   // iDMRG
         {
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(site,
@@ -121,8 +149,13 @@ int main()
             rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
                                      // copy primeToRhoBasis to reflected block
         };
-        if(nSweeps == 0)
-            leftBlocks[lSFinal - 1].randomSeed();
+        if(oddSize)          // last half-step of iDMRG for an odd-sized system
+            leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
+                                      .nextBlock(lSFinal - 2,
+                                                 leftBlocks[lSFinal - 2],
+                                                 completeED);
+        if(nSweeps == 0 || completeED)
+            leftBlocks[lSFinal - 1].randomSeed(rightBlocks[lEFinal - 1]);
         else
         {
             std::cout << "Performing fDMRG..." << std::endl;
@@ -151,11 +184,10 @@ int main()
             };
         };
         EffectiveHamiltonian hSuperFinal = leftBlocks[lSFinal - 1]
-                      .createHSuperFinal(rightBlocks[lSFinal - 1], lSFinal - 1,
-                                         skips);
-                                               // calculate ground-state energy
+                      .createHSuperFinal(rightBlocks[lEFinal - 1], lSFinal - 1,
+                                         skips); // calculate ground-state energy
         fileout << "Ground state energy density = "
-                << hSuperFinal.gsEnergy() / lSys << std::endl << std::endl;
+                << hSuperFinal.gsEnergy / lSys << std::endl << std::endl;
         if(calcObservables)
         {
             std::cout << "Calculating observables..." << std::endl;

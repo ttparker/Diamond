@@ -29,7 +29,7 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
                              bool infiniteStage,
                              const TheBlock& beforeCompBlock)
 {
-    std::vector<int> hSprimeQNumList	  // add in quantum numbers of new site
+    std::vector<int> hSprimeQNumList      // add in quantum numbers of new site
         = vectorProductSum(qNumList, ham.oneSiteQNums);
     ham.thisSiteType = l % nSiteTypes;
     ham.compSiteType = (ham.lSys - 4 - l) % nSiteTypes;
@@ -53,23 +53,20 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
         return TheBlock(md, hSprime, tempOff0RhoBasisH2, tempOff1RhoBasisH2,
                         hSprimeQNumList);
     };
-    VectorXd seed;
     int compm = compBlock.m,
         compmd = compm * d;
     if(infiniteStage)
     {
-        seed = VectorXd::Random(md * md);
-        seed /= seed.norm();
+        psiGround = VectorXd::Random(md * md);
+        psiGround /= psiGround.norm();
     }
     else if(firstfDMRGStep)
     {
-        seed = VectorXd::Random(md * compmd);
-        seed /= seed.norm();
+        psiGround = VectorXd::Random(md * compmd);
+        psiGround /= psiGround.norm();
         firstfDMRGStep = false;
     }
-    else
-        seed = psiGround;
-    HamSolver hSuperSolver = (infiniteStage ?    // find superblock eigenstates
+    HamSolver hSuperSolver = (infiniteStage ?       // find superblock eigenstates
                               HamSolver(MatrixXd(kp(hSprime, Id(md))
                                                  + ham.lBlockrSiteJoin(off0RhoBasisH2, m)
                                                  + ham.siteSiteJoin(m, m)
@@ -78,7 +75,7 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
                                         vectorProductSum(hSprimeQNumList,
                                                          hSprimeQNumList),
                                         ham.targetQNum * (l + 2) / ham.lSys * 2,
-                                        seed) : // int automatically rounds down
+                                        psiGround) : // int automatically rounds down
                               HamSolver(MatrixXd(kp(hSprime, Id(compmd))
                                                  + ham.lBlockrSiteJoin(off0RhoBasisH2, compm)
                                                  + ham.siteSiteJoin(m, compm)
@@ -89,13 +86,12 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
                                         vectorProductSum(hSprimeQNumList,
                                                          vectorProductSum(compBlock.qNumList,
                                                                           ham.oneSiteQNums)),
-                                        ham.targetQNum, seed));
-    psiGround = hSuperSolver.lowestEvec();				// ground state
+                                        ham.targetQNum, psiGround));
+    psiGround = hSuperSolver.lowestEvec;                        // ground state
     psiGround.resize(md, infiniteStage ? md : compmd);
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList, mMax);
-                                            // find density matrix eigenstates
-    primeToRhoBasis = rhoSolver.highestEvecs();
-                                            // construct change-of-basis matrix
+                                             // find density matrix eigenstates
+    primeToRhoBasis = rhoSolver.highestEvecs; // construct change-of-basis matrix
     for(int i = 0; i < indepCouplingOperators; i++)
     {
         tempOff0RhoBasisH2.push_back(changeBasis(kp(Id(m), ham.h2[i])));
@@ -120,13 +116,13 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
         psiGround.resize(mMax * d * beforeCompBlock.primeToRhoBasis.rows(), 1);
     };
     return TheBlock(mMax, changeBasis(hSprime), tempOff0RhoBasisH2,
-                    tempOff1RhoBasisH2, rhoSolver.highestEvecQNums());
+                    tempOff1RhoBasisH2, rhoSolver.highestEvecQNums);
                                 // save expanded-block operators in new basis
 };
 
-void TheBlock::randomSeed()
+void TheBlock::randomSeed(const TheBlock& compBlock)
 {
-    psiGround = VectorXd::Random(m * d * m * d);
+    psiGround = VectorXd::Random(m * d * compBlock.m * d);
     psiGround /= psiGround.norm();
 };
 
@@ -154,7 +150,7 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const TheBlock& compBlock,
                                          + kp(Id(m * d), ham.blockAdjacentSiteJoin(1, compBlock.off0RhoBasisH2, false)
                                                          + ham.blockAdjacentSiteJoin(2, compBlock.off1RhoBasisH2, false)
                                                          + kp(compBlock.hS, Id_d))),
-                                m, skips);
+                                m, compm, skips);
 };
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const

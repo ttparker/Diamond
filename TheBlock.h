@@ -3,9 +3,6 @@
 
 #include "Hamiltonian.h"
 
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    rmMatrixXd;
-
 class EffectiveHamiltonian;
 
 class TheBlock
@@ -25,7 +22,7 @@ class TheBlock
                            bool exactDiag = true, bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
                                                      // performs each DMRG step
-        void randomSeed();                                    // for iDMRG case
+        void randomSeed(const TheBlock& compBlock);           // for iDMRG case
         void reflectPredictedPsi();            // when you reach edge of system
         EffectiveHamiltonian createHSuperFinal(const TheBlock& compBlock,
                                                int l, int skips) const;
