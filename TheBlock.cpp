@@ -12,11 +12,11 @@ TheBlock::TheBlock(int m, const MatrixXd& hS,
                    const std::vector<MatrixXd>& off0RhoBasisH2,
                    const std::vector<MatrixXd>& off1RhoBasisH2,
                    const std::vector<int>& qNumList)
-    : qNumList(qNumList), hS(hS), off0RhoBasisH2(off0RhoBasisH2),
-      off1RhoBasisH2(off1RhoBasisH2), m(m) {};
+    : m(m), qNumList(qNumList), hS(hS), off0RhoBasisH2(off0RhoBasisH2),
+      off1RhoBasisH2(off1RhoBasisH2) {};
 
 TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn)
-    : qNumList(ham.oneSiteQNums), hS(MatrixDd::Zero()), m(d)
+    : m(d), qNumList(ham.oneSiteQNums), hS(MatrixDd::Zero())
 {
     firstfDMRGStep = true;
     ham = hamIn;
@@ -56,16 +56,12 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
     int compm = compBlock.m,
         compmd = compm * d;
     if(infiniteStage)
-    {
-        psiGround = VectorXd::Random(md * md);
-        psiGround /= psiGround.norm();
-    }
+        randomSeed(m);
     else if(firstfDMRGStep)
     {
-        psiGround = VectorXd::Random(md * compmd);
-        psiGround /= psiGround.norm();
+        randomSeed(compm);
         firstfDMRGStep = false;
-    }
+    };
     HamSolver hSuperSolver = (infiniteStage ?       // find superblock eigenstates
                               HamSolver(MatrixXd(kp(hSprime, Id(md))
                                                  + ham.lBlockrSiteJoin(off0RhoBasisH2, m)
@@ -120,9 +116,9 @@ TheBlock TheBlock::nextBlock(int l, const TheBlock& compBlock, bool exactDiag,
                                 // save expanded-block operators in new basis
 };
 
-void TheBlock::randomSeed(const TheBlock& compBlock)
+void TheBlock::randomSeed(int compm)
 {
-    psiGround = VectorXd::Random(m * d * compBlock.m * d);
+    psiGround = VectorXd::Random(m * d * compm * d);
     psiGround /= psiGround.norm();
 };
 
