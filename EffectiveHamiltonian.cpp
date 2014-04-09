@@ -7,8 +7,9 @@ EffectiveHamiltonian::EffectiveHamiltonian(const std::vector<int>& qNumList,
                                            const std::vector<int>& compQNumList,
                                            const Hamiltonian& ham,
                                            const MatrixXd& matFinal,
+                                           const rmMatrixXd& psiGroundIn,
                                            int mSFinal, int mEFinal, int skips)
-    : lSupFinal(ham.lSys), psiGround(TheBlock::psiGround), mSFinal(mSFinal),
+    : lSupFinal(ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
 {
     HamSolver hSuperSolver(matFinal,

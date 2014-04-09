@@ -18,6 +18,7 @@ class EffectiveHamiltonian
                              const std::vector<int>& compQNumList,
                              const Hamiltonian& ham,
                              const Eigen::MatrixXd& matFinal,
+                             const rmMatrixXd& psiGroundIn,
                              int mSFinal, int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
                         std::vector<TheBlock>& rightBlocks);

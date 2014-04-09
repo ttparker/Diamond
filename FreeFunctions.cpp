@@ -4,6 +4,13 @@
 
 using namespace Eigen;
 
+rmMatrixXd randomSeed(int size)
+{
+    rmMatrixXd seed = rmMatrixXd::Random(size, 1);
+    seed /= seed.norm();
+    return seed;
+};
+
 std::vector<int> vectorProductSum(const std::vector<int>& first,
                                   const std::vector<int>& second)
 {
@@ -15,6 +22,13 @@ std::vector<int> vectorProductSum(const std::vector<int>& first,
         for(int j = 0; j < secondSize; j++)
             prod.push_back(first.at(i) + second.at(j));
     return prod;
+};
+
+void reflectPredictedPsi(rmMatrixXd& psiGround, int mMax, int m)
+{
+    psiGround.resize(mMax * d, m * d);
+    psiGround.transposeInPlace();
+    psiGround.resize(mMax * d * m * d, 1);
 };
 
 VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
