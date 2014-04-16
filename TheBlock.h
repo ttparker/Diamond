@@ -12,14 +12,15 @@ class TheBlock
         Eigen::MatrixXd primeToRhoBasis;              // change-of-basis matrix
         
         TheBlock(int m = 0,
+                 const std::vector<int>& qNumList = std::vector<int>(),
                  const Eigen::MatrixXd& hS = Eigen::MatrixXd(),
                  const std::vector<Eigen::MatrixXd>& off0RhoBasisH2 
                         = std::vector<Eigen::MatrixXd>(),
                  const std::vector<Eigen::MatrixXd>& off1RhoBasisH2
                         = std::vector<Eigen::MatrixXd>(),
-                 const std::vector<int>& qNumList = std::vector<int>());
+                 int l = 0);
         TheBlock(const Hamiltonian& ham, int mMaxIn);
-        TheBlock nextBlock(rmMatrixXd& psiGround, int l,
+        TheBlock nextBlock(rmMatrixXd& psiGround,
                            const TheBlock& compBlock, bool exactDiag = true,
                            bool infiniteStage = true,
                            const TheBlock& beforeCompBlock = TheBlock());
@@ -39,6 +40,7 @@ class TheBlock
             // density-matrix-basis coupling operators - "off" means the offset
             // between this block, in which the operator is represented, and
             // the site on which it acts
+        int l;            // site at the end of the block (i.e. block size - 1)
         static int mMax;                   // max size of effective Hamiltonian
         
         Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;

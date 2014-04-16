@@ -137,7 +137,7 @@ int main()
         rmMatrixXd psiGround;                     // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1]
-                                  = leftBlocks[site].nextBlock(psiGround, site,
+                                  = leftBlocks[site].nextBlock(psiGround,
                                                                TheBlock());
         Sector::lancTolerance = groundStateErrorTolerance
                                 * groundStateErrorTolerance / 2;
@@ -146,7 +146,7 @@ int main()
             psiGround = randomSeed(leftBlocks[site].m * d
                                    * leftBlocks[site].m * d);
             rightBlocks[site + 1] = leftBlocks[site + 1]
-                                  = leftBlocks[site].nextBlock(psiGround, site,
+                                  = leftBlocks[site].nextBlock(psiGround,
                                                                TheBlock(),
                                                                false);
             rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
@@ -157,8 +157,8 @@ int main()
             psiGround = randomSeed(leftBlocks[lSFinal - 2].m * d
                                    * leftBlocks[lSFinal - 2].m * d);
             leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
-                                      .nextBlock(psiGround, lSFinal - 2,
-                                                 TheBlock(), completeED);
+                                      .nextBlock(psiGround, TheBlock(),
+                                                 completeED);
         };
         if(nSweeps == 0 || completeED)
             psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
@@ -173,20 +173,20 @@ int main()
                 for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
                     site++)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(psiGround,
-                                           site, rightBlocks[lSys - 4 - site],
+                                           rightBlocks[lSys - 4 - site],
                                            false, false,
                                            rightBlocks[lSys - 5 - site]);
                 reflectPredictedPsi(psiGround, mMax, rightBlocks[skips].m);
                                // reflect the system to reverse sweep direction
                 for(int site = skips, end = lSys - 4 - skips; site < end; site++)
                     rightBlocks[site + 1] = rightBlocks[site].nextBlock(psiGround,
-                                            site, leftBlocks[lSys - 4 - site],
+                                            leftBlocks[lSys - 4 - site],
                                             false, false,
                                             leftBlocks[lSys - 5 - site]);
                 reflectPredictedPsi(psiGround, mMax, leftBlocks[skips].m);
                 for(int site = skips, end = lSFinal - 1; site < end; site++)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(psiGround,
-                                           site, rightBlocks[lSys - 4 - site],
+                                           rightBlocks[lSys - 4 - site],
                                            false, false,
                                            rightBlocks[lSys - 5 - site]);
                 std::cout << "Sweep " << i << " complete." << std::endl;

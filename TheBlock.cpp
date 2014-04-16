@@ -6,15 +6,14 @@ using namespace Eigen;
 Hamiltonian TheBlock::ham;
 int TheBlock::mMax;
 
-TheBlock::TheBlock(int m, const MatrixXd& hS,
+TheBlock::TheBlock(int m, const std::vector<int>& qNumList, const MatrixXd& hS,
                    const std::vector<MatrixXd>& off0RhoBasisH2,
-                   const std::vector<MatrixXd>& off1RhoBasisH2,
-                   const std::vector<int>& qNumList)
+                   const std::vector<MatrixXd>& off1RhoBasisH2, int l)
     : m(m), qNumList(qNumList), hS(hS), off0RhoBasisH2(off0RhoBasisH2),
-      off1RhoBasisH2(off1RhoBasisH2) {};
+      off1RhoBasisH2(off1RhoBasisH2), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn)
-    : m(d), qNumList(ham.oneSiteQNums), hS(MatrixDd::Zero())
+    : m(d), qNumList(ham.oneSiteQNums), hS(MatrixDd::Zero()), l(0)
 {
     ham = hamIn;
     mMax = mMaxIn;
@@ -22,7 +21,7 @@ TheBlock::TheBlock(const Hamiltonian& hamIn, int mMaxIn)
                           ham.h2.begin() + indepCouplingOperators);
 };
 
-TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround, int l,
+TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround,
                              const TheBlock& compBlock, bool exactDiag,
                              bool infiniteStage,
                              const TheBlock& beforeCompBlock)
@@ -48,8 +47,8 @@ TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround, int l,
             tempOff0RhoBasisH2.push_back(kp(Id(m), ham.h2[i]));
             tempOff1RhoBasisH2.push_back(kp(off0RhoBasisH2[i], Id_d));
         };
-        return TheBlock(md, hSprime, tempOff0RhoBasisH2, tempOff1RhoBasisH2,
-                        hSprimeQNumList);
+        return TheBlock(md, hSprimeQNumList, hSprime, tempOff0RhoBasisH2,
+                        tempOff1RhoBasisH2, l + 1);
     };
     int compm = compBlock.m,
         compmd = compm * d;
@@ -102,9 +101,9 @@ TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround, int l,
                                           // change the environment block basis
         psiGround.resize(mMax * d * beforeCompBlock.primeToRhoBasis.rows(), 1);
     };
-    return TheBlock(mMax, changeBasis(hSprime), tempOff0RhoBasisH2,
-                    tempOff1RhoBasisH2, rhoSolver.highestEvecQNums);
-                                // save expanded-block operators in new basis
+    return TheBlock(mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
+                    tempOff0RhoBasisH2, tempOff1RhoBasisH2, l + 1);
+                                  // save expanded-block operators in new basis
 };
 
 EffectiveHamiltonian TheBlock::createHSuperFinal(const TheBlock& compBlock,
