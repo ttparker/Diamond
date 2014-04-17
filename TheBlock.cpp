@@ -29,7 +29,7 @@ TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround,
     std::vector<int> hSprimeQNumList      // add in quantum numbers of new site
         = vectorProductSum(qNumList, ham.oneSiteQNums);
     int thisSiteType = l % nSiteTypes,
-        compSiteType = (ham.lSys - 4 - l) % nSiteTypes;
+        compSiteType = compBlock.l % nSiteTypes;
     MatrixXd hSprime = kp(hS, Id_d) + ham.blockAdjacentSiteJoin(1, thisSiteType,
                                                                 off0RhoBasisH2);
                                                        // expanded system block
@@ -111,7 +111,7 @@ EffectiveHamiltonian TheBlock::createHSuperFinal(const TheBlock& compBlock,
                                                  int skips) const
 {
     int thisSiteType = l % nSiteTypes,
-        compSiteType = (ham.lSys - 4 - l) % nSiteTypes,
+        compSiteType = compBlock.l % nSiteTypes,
         compm = compBlock.m;
     return EffectiveHamiltonian(qNumList, compBlock.qNumList, ham,
                                 MatrixXd(kp(kp(hS, Id_d)
