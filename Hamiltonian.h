@@ -17,8 +17,6 @@ class Hamiltonian
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     private:
-        int thisSiteType,               // location on basis of Bravais lattice
-            compSiteType;                        // same for complementary site
         std::vector<int> oneSiteQNums;
         Eigen::Matrix<double, 2, 3> BASJ;
         // these are the arrays of coupling constants for each type of site in
@@ -33,16 +31,16 @@ class Hamiltonian
             lSys;                                      // current system length
         
         Eigen::MatrixXd
-            blockAdjacentSiteJoin(int jType,
-                                  const std::vector<Eigen::MatrixXd>& rhoBasisH2,
-                                  bool thisBlock = true) const,
-                                         // j gives the j-1th coupling constant
-            lBlockrSiteJoin(const std::vector<Eigen::MatrixXd>& off0RhoBasisH2,
-                            int mlE, bool thisBlock = true) const,
-            lSiterBlockJoin(int ml,
+            blockAdjacentSiteJoin(int jType, int siteType,
+                                  const std::vector<Eigen::MatrixXd>& rhoBasisH2)
+                                  const, // j gives the j-1th coupling constant
+            lBlockrSiteJoin(int siteType,
                             const std::vector<Eigen::MatrixXd>& off0RhoBasisH2,
-                            bool thisBlock = true) const,
-            siteSiteJoin(int ml, int mlE, bool thisBlock = true) const;
+                            int mlE) const,
+            lSiterBlockJoin(int siteType, int ml,
+                            const std::vector<Eigen::MatrixXd>& off0RhoBasisH2)
+                            const,
+            siteSiteJoin(int siteType, int ml, int mlE) const;
                                            // joins the two free sites together
     
     friend class TheBlock;

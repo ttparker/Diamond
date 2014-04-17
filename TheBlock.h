@@ -27,7 +27,7 @@ class TheBlock
                                                      // performs each DMRG step
         EffectiveHamiltonian createHSuperFinal(const TheBlock& compBlock,
                                                const rmMatrixXd& psiGround,
-                                               int l, int skips) const;
+                                               int skips) const;
                     // HSuperFinal, mSFinal, qNumList, oneSiteQNums, targetQNum
     
     private:

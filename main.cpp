@@ -194,8 +194,7 @@ int main()
         };
         EffectiveHamiltonian hSuperFinal
             = leftBlocks[lSFinal - 1].createHSuperFinal(rightBlocks[lEFinal - 1],
-                                                        psiGround, lSFinal - 1,
-                                                        skips);
+                                                        psiGround, skips);
                                                // calculate ground-state energy
         fileout << "Ground state energy density = "
                 << hSuperFinal.gsEnergy / lSys << std::endl << std::endl;

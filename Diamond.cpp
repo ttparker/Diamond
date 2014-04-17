@@ -12,12 +12,10 @@
 #define off0RhoBasisSigmaz off0RhoBasisH2[1]
 #define off1RhoBasisSigmaplus off1RhoBasisH2[0]
 #define off1RhoBasisSigmaz off1RhoBasisH2[1]
-#define siteType (thisBlock ? thisSiteType : compSiteType)
 
 using namespace Eigen;
 
-Hamiltonian::Hamiltonian() : thisSiteType(0), compSiteType(0),
-                             oneSiteQNums({1, -1})
+Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
 {
     h2.resize(3);
     sigmaplus << 0., 1.,
@@ -40,27 +38,26 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstants,
     lSys = lSysIn;
 };
 
-MatrixXd Hamiltonian::blockAdjacentSiteJoin(int jType,
+MatrixXd Hamiltonian::blockAdjacentSiteJoin(int jType, int siteType,
                                             const std::vector<MatrixXd>&
-                                            rhoBasisH2, bool thisBlock) const
+                                            rhoBasisH2) const
 {
     MatrixXd plusMinus = kp(rhoBasisSigmaplus, sigmaminus);
     return BASJ(jType - 1, siteType) *
         (kp(rhoBasisSigmaz, sigmaz) + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixXd Hamiltonian::lBlockrSiteJoin(const std::vector<MatrixXd>&
-                                      off0RhoBasisH2, int mlE, bool thisBlock)
-                                      const
+MatrixXd Hamiltonian::lBlockrSiteJoin(int siteType, const std::vector<MatrixXd>&
+                                      off0RhoBasisH2, int mlE) const
 {
     MatrixXd plusMinus = kp(kp(off0RhoBasisSigmaplus, Id(d * mlE)), sigmaminus);
     return LBRSJ[siteType] * (kp(kp(off0RhoBasisSigmaz, Id(d * mlE)), sigmaz)
                               + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixXd Hamiltonian::lSiterBlockJoin(int ml,
+MatrixXd Hamiltonian::lSiterBlockJoin(int siteType, int ml,
                                       const std::vector<MatrixXd>&
-                                      off0RhoBasisH2, bool thisBlock) const
+                                      off0RhoBasisH2) const
 {
     MatrixXd plusMinus = kp(sigmaplus, off0RhoBasisSigmaplus.adjoint());
     return LSRBJ[siteType] *
@@ -69,7 +66,7 @@ MatrixXd Hamiltonian::lSiterBlockJoin(int ml,
            Id_d);
 };
 
-MatrixXd Hamiltonian::siteSiteJoin(int ml, int mlE, bool thisBlock) const
+MatrixXd Hamiltonian::siteSiteJoin(int siteType, int ml, int mlE) const
 {
     MatrixXd plusMinus = kp(kp(sigmaplus, Id(mlE)), sigmaminus);
     return SSJ[siteType] * kp(Id(ml), kp(kp(sigmaz, Id(mlE)), sigmaz)

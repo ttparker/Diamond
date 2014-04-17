@@ -28,13 +28,13 @@ TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround,
 {
     std::vector<int> hSprimeQNumList      // add in quantum numbers of new site
         = vectorProductSum(qNumList, ham.oneSiteQNums);
-    ham.thisSiteType = l % nSiteTypes;
-    ham.compSiteType = (ham.lSys - 4 - l) % nSiteTypes;
-    MatrixXd hSprime = kp(hS, Id_d) + ham.blockAdjacentSiteJoin(1,
+    int thisSiteType = l % nSiteTypes,
+        compSiteType = (ham.lSys - 4 - l) % nSiteTypes;
+    MatrixXd hSprime = kp(hS, Id_d) + ham.blockAdjacentSiteJoin(1, thisSiteType,
                                                                 off0RhoBasisH2);
                                                        // expanded system block
     if(l != 0)
-        hSprime += ham.blockAdjacentSiteJoin(2, off1RhoBasisH2);
+        hSprime += ham.blockAdjacentSiteJoin(2, thisSiteType, off1RhoBasisH2);
     std::vector<MatrixXd> tempOff0RhoBasisH2,
                           tempOff1RhoBasisH2;
     tempOff0RhoBasisH2.reserve(indepCouplingOperators);
@@ -54,20 +54,20 @@ TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround,
         compmd = compm * d;
     HamSolver hSuperSolver = (infiniteStage ?       // find superblock eigenstates
                               HamSolver(MatrixXd(kp(hSprime, Id(md))
-                                                 + ham.lBlockrSiteJoin(off0RhoBasisH2, m)
-                                                 + ham.siteSiteJoin(m, m)
-                                                 + ham.lSiterBlockJoin(m, off0RhoBasisH2)
+                                                 + ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, m)
+                                                 + ham.siteSiteJoin(thisSiteType, m, m)
+                                                 + ham.lSiterBlockJoin(thisSiteType, m, off0RhoBasisH2)
                                                  + kp(Id(md), hSprime)),
                                         vectorProductSum(hSprimeQNumList,
                                                          hSprimeQNumList),
                                         ham.targetQNum * (l + 2) / ham.lSys * 2,
                                         psiGround) : // int automatically rounds down
                               HamSolver(MatrixXd(kp(hSprime, Id(compmd))
-                                                 + ham.lBlockrSiteJoin(off0RhoBasisH2, compm)
-                                                 + ham.siteSiteJoin(m, compm)
-                                                 + ham.lSiterBlockJoin(m, compBlock.off0RhoBasisH2)
-                                                 + kp(Id(md), ham.blockAdjacentSiteJoin(1, compBlock.off0RhoBasisH2, false)
-                                                              + ham.blockAdjacentSiteJoin(2, compBlock.off1RhoBasisH2, false)
+                                                 + ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, compm)
+                                                 + ham.siteSiteJoin(thisSiteType, m, compm)
+                                                 + ham.lSiterBlockJoin(thisSiteType, m, compBlock.off0RhoBasisH2)
+                                                 + kp(Id(md), ham.blockAdjacentSiteJoin(1, compSiteType, compBlock.off0RhoBasisH2)
+                                                              + ham.blockAdjacentSiteJoin(2, compSiteType, compBlock.off1RhoBasisH2)
                                                               + kp(compBlock.hS, Id_d))),
                                         vectorProductSum(hSprimeQNumList,
                                                          vectorProductSum(compBlock.qNumList,
@@ -108,21 +108,21 @@ TheBlock TheBlock::nextBlock(rmMatrixXd& psiGround,
 
 EffectiveHamiltonian TheBlock::createHSuperFinal(const TheBlock& compBlock,
                                                  const rmMatrixXd& psiGround,
-                                                 int l, int skips) const
+                                                 int skips) const
 {
-    ham.thisSiteType = l % nSiteTypes;
-    ham.compSiteType = (ham.lSys - 4 - l) % nSiteTypes;
-    int compm = compBlock.m;
+    int thisSiteType = l % nSiteTypes,
+        compSiteType = (ham.lSys - 4 - l) % nSiteTypes,
+        compm = compBlock.m;
     return EffectiveHamiltonian(qNumList, compBlock.qNumList, ham,
                                 MatrixXd(kp(kp(hS, Id_d)
-                                            + ham.blockAdjacentSiteJoin(1, off0RhoBasisH2)
-                                            + ham.blockAdjacentSiteJoin(2, off1RhoBasisH2),
+                                            + ham.blockAdjacentSiteJoin(1, thisSiteType, off0RhoBasisH2)
+                                            + ham.blockAdjacentSiteJoin(2, thisSiteType, off1RhoBasisH2),
                                             Id(compm * d))
-                                         + ham.lBlockrSiteJoin(off0RhoBasisH2, compm)
-                                         + ham.siteSiteJoin(m, compm)
-                                         + ham.lSiterBlockJoin(m, compBlock.off0RhoBasisH2)
-                                         + kp(Id(m * d), ham.blockAdjacentSiteJoin(1, compBlock.off0RhoBasisH2, false)
-                                                         + ham.blockAdjacentSiteJoin(2, compBlock.off1RhoBasisH2, false)
+                                         + ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, compm)
+                                         + ham.siteSiteJoin(thisSiteType, m, compm)
+                                         + ham.lSiterBlockJoin(thisSiteType, m, compBlock.off0RhoBasisH2)
+                                         + kp(Id(m * d), ham.blockAdjacentSiteJoin(1, compSiteType, compBlock.off0RhoBasisH2)
+                                                         + ham.blockAdjacentSiteJoin(2, compSiteType, compBlock.off1RhoBasisH2)
                                                          + kp(compBlock.hS, Id_d))),
                                 psiGround, m, compm, skips);
 };
