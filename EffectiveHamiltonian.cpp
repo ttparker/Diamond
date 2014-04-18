@@ -3,21 +3,21 @@
 
 using namespace Eigen;
 
-EffectiveHamiltonian::EffectiveHamiltonian(const std::vector<int>& qNumList,
+EffectiveHamiltonian::EffectiveHamiltonian(const MatrixXd& matFinal,
+                                           const std::vector<int>& qNumList,
                                            const std::vector<int>& compQNumList,
-                                           const Hamiltonian& ham,
-                                           const MatrixXd& matFinal,
+                                           const stepData& data,
                                            const rmMatrixXd& psiGroundIn,
                                            int mSFinal, int mEFinal, int skips)
-    : lSupFinal(ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
+    : lSupFinal(data.ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
 {
     HamSolver hSuperSolver(matFinal,
                            vectorProductSum(vectorProductSum(qNumList,
-                                                             ham.oneSiteQNums),
+                                                             data.ham.oneSiteQNums),
                                             vectorProductSum(compQNumList,
-                                                             ham.oneSiteQNums)),
-                           ham.targetQNum, psiGround);
+                                                             data.ham.oneSiteQNums)),
+                           data.ham.targetQNum, psiGround, data.lancTolerance);
     gsEnergy = hSuperSolver.lowestEval;
     psiGround = hSuperSolver.lowestEvec;
     if(lSupFinal % 2)

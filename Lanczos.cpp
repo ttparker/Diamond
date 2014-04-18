@@ -13,7 +13,8 @@ extern "C"
 
 using namespace Eigen;
 
-double Sector::lanczos(const MatrixXd& mat, rmMatrixXd& seed)
+double Sector::lanczos(const MatrixXd& mat, rmMatrixXd& seed,
+                       double lancTolerance)
 {
     int matSize = mat.rows();
     if(matSize == 1)

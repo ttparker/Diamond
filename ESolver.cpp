@@ -5,9 +5,6 @@
 
 using namespace Eigen;
 
-double Sector::lancTolerance;
-int Sector::fullMatrixSize;
-
 Sector::Sector(const std::vector<int>& qNumList, int qNum, const MatrixXd& mat)
     : multiplicity(std::count(qNumList.begin(), qNumList.end(), qNum)),
       sectorMat(MatrixXd(multiplicity, multiplicity)),
@@ -24,7 +21,7 @@ Sector::Sector(const std::vector<int>& qNumList, int qNum, const MatrixXd& mat)
             sectorMat(elmt++) = mat(i, j);
 };
 
-VectorXd Sector::filledOutEvec(VectorXd sectorEvec) const
+VectorXd Sector::filledOutEvec(VectorXd sectorEvec, int fullMatrixSize) const
 {
     VectorXd longEvec = VectorXd::Zero(fullMatrixSize);
     for(int i = 0; i < multiplicity; i++)
@@ -32,14 +29,14 @@ VectorXd Sector::filledOutEvec(VectorXd sectorEvec) const
     return longEvec;
 };
 
-double Sector::solveForLowest(VectorXd& bigSeed)
+double Sector::solveForLowest(VectorXd& bigSeed, double lancTolerance)
 {
     rmMatrixXd littleSeed(multiplicity, 1);
     for(int i = 0; i < multiplicity; i++)
         littleSeed(i) = bigSeed(positions[i]);
     littleSeed /= littleSeed.norm();
-    double lowestEval = lanczos(sectorMat, littleSeed);
-    bigSeed = filledOutEvec(littleSeed);
+    double lowestEval = lanczos(sectorMat, littleSeed, lancTolerance);
+    bigSeed = filledOutEvec(littleSeed, bigSeed.rows());
     return lowestEval;
 };
 
@@ -48,25 +45,23 @@ void Sector::solveForAll()
     solver.compute(sectorMat);
 };
 
-Eigen::VectorXd Sector::nextHighestEvec()
+Eigen::VectorXd Sector::nextHighestEvec(int fullMatrixSize)
 {
-    return filledOutEvec(solver.eigenvectors().col(--sectorColumnCounter));
+    return filledOutEvec(solver.eigenvectors().col(--sectorColumnCounter),
+                         fullMatrixSize);
 };
 
 HamSolver::HamSolver(const MatrixXd& mat, const std::vector<int>& qNumList,
-                     int targetQNum, rmMatrixXd& bigSeed)
+                     int targetQNum, rmMatrixXd& bigSeed, double lancTolerance)
     : lowestEvec(bigSeed)
 {
-    Sector::fullMatrixSize = mat.rows();
     Sector targetSector(qNumList, targetQNum, mat);
-    lowestEval = targetSector.solveForLowest(lowestEvec);
+    lowestEval = targetSector.solveForLowest(lowestEvec, lancTolerance);
 };
 
 DMSolver::DMSolver(const Eigen::MatrixXd& mat, const std::vector<int>& qNumList,
                    int evecsToKeep)
 {
-    int matSize = mat.rows();
-    Sector::fullMatrixSize = matSize;
     std::map<int, Sector> sectors;                 // key is the quantum number
     std::map<double, int> indexedEvals;              // eigenvalue, then sector
     std::set<int> qNumSet(qNumList.begin(), qNumList.end());
@@ -85,12 +80,13 @@ DMSolver::DMSolver(const Eigen::MatrixXd& mat, const std::vector<int>& qNumList,
         };
     };
     highestEvecQNums.reserve(evecsToKeep);
+    int matSize = mat.rows();
     highestEvecs = MatrixXd::Zero(matSize, evecsToKeep);
     auto currentIndexedEval = indexedEvals.rbegin();
     for(int j = 0; j < evecsToKeep; j++)
     {
         int qNum = currentIndexedEval++ -> second;
         highestEvecQNums.push_back(qNum);
-        highestEvecs.col(j) = sectors[qNum].nextHighestEvec();
+        highestEvecs.col(j) = sectors[qNum].nextHighestEvec(matSize);
     };
 };

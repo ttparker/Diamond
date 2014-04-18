@@ -14,10 +14,10 @@ class EffectiveHamiltonian
     public:
         double gsEnergy;                                 // ground-state energy
         
-        EffectiveHamiltonian(const std::vector<int>& qNumList,
+        EffectiveHamiltonian(const Eigen::MatrixXd& matFinal,
+                             const std::vector<int>& qNumList,
                              const std::vector<int>& compQNumList,
-                             const Hamiltonian& ham,
-                             const Eigen::MatrixXd& matFinal,
+                             const stepData& data,
                              const rmMatrixXd& psiGroundIn,
                              int mSFinal, int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
