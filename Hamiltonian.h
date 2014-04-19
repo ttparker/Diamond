@@ -10,6 +10,10 @@
 class Hamiltonian
 {
     public:
+        std::vector<int> oneSiteQNums;              // one-site quantum numbers
+        int targetQNum,                              // targeted quantum number
+            lSys;                                      // current system length
+        
         Hamiltonian();
         void setParams(const std::vector<double>& couplingConstants,
                        int targetQNumIn, int lSysIn);
@@ -17,7 +21,6 @@ class Hamiltonian
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     private:
-        std::vector<int> oneSiteQNums;
         Eigen::Matrix<double, 2, 3> BASJ;
         // these are the arrays of coupling constants for each type of site in
         // the lattice basis - the acronyms stand for the coupling operators
@@ -27,8 +30,6 @@ class Hamiltonian
                             SSJ;
         std::vector<MatrixDd, Eigen::aligned_allocator<MatrixDd>> h2;
                                                // site-basis coupling operators
-        int targetQNum,              // targeted average magnetization per site
-            lSys;                                      // current system length
         
         Eigen::MatrixXd
             blockAdjacentSiteJoin(int jType, int siteType,
@@ -44,7 +45,6 @@ class Hamiltonian
                                            // joins the two free sites together
     
     friend class TheBlock;
-    friend class EffectiveHamiltonian;
 };
 
 #endif
