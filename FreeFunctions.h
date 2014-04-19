@@ -3,11 +3,13 @@
 
 #include "EffectiveHamiltonian.h"
 
-rmMatrixXd randomSeed(int size);            // outputs random normalized vector
+rmMatrixXd randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock);
+                                            // outputs random normalized vector
 std::vector<int> vectorProductSum(const std::vector<int>& first,
                                   const std::vector<int>& second);
             // takes the tensor product of two blocks' lists of quantum numbers
-void reflectPredictedPsi(rmMatrixXd& psiGround, int mMax, int m);
+void reflectPredictedPsi(rmMatrixXd& psiGround, const TheBlock& bigBlock,
+                         const TheBlock& littleBlock);
                                                // when you reach edge of system
 Eigen::VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp,
                                  int rangeOfObservables, int lSys,

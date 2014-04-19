@@ -148,8 +148,7 @@ int main()
         for(int site = skips, end = lEFinal - 1; site < end; site++)   // iDMRG
         {
             data.compBlock = rightBlocksStart + site;
-            psiGround = randomSeed(leftBlocks[site].m * d
-                                   * leftBlocks[site].m * d);
+            psiGround = randomSeed(leftBlocks[site], leftBlocks[site]);
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(data, psiGround);
             rightBlocks[site].primeToRhoBasis = leftBlocks[site].primeToRhoBasis;
@@ -157,20 +156,21 @@ int main()
         };
         if(oddSize)          // last half-step of iDMRG for an odd-sized system
         {
-            psiGround = randomSeed(leftBlocks[lSFinal - 2].m * d
-                                   * leftBlocks[lSFinal - 2].m * d);
+            psiGround = randomSeed(leftBlocks[lSFinal - 2],
+                                   leftBlocks[lSFinal - 2]);
             leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
                                       .nextBlock(data, psiGround);
         };
         if(nSweeps == 0 || completeED)
-            psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
-                                   * rightBlocks[lEFinal - 1].m * d);
+            psiGround = randomSeed(leftBlocks[lSFinal - 1],
+                                   rightBlocks[lEFinal - 1]);
         else
         {
             std::cout << "Performing fDMRG..." << std::endl;
             data.infiniteStage = false;
-            psiGround = randomSeed(leftBlocks[lSFinal - 1].m * d
-                                   * rightBlocks[lEFinal - 1].m * d);
+            int endSweep = lSys - 4 - skips;              // last site of sweep
+            psiGround = randomSeed(leftBlocks[lSFinal - 1],
+                                   rightBlocks[lEFinal - 1]);
             for(int i = 1; i <= nSweeps; i++)       // perform the fDMRG sweeps
             {
                 for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
@@ -181,7 +181,8 @@ int main()
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
                                                                       psiGround);
                 };
-                reflectPredictedPsi(psiGround, data.mMax, rightBlocks[skips].m);
+                reflectPredictedPsi(psiGround, leftBlocks[endSweep],
+                                    rightBlocks[skips]);
                                // reflect the system to reverse sweep direction
                 for(int site = skips, end = lSys - 4 - skips; site < end; site++)
                 {
@@ -190,7 +191,8 @@ int main()
                     rightBlocks[site + 1] = rightBlocks[site].nextBlock(data,
                                                                         psiGround);
                 };
-                reflectPredictedPsi(psiGround, data.mMax, leftBlocks[skips].m);
+                reflectPredictedPsi(psiGround, rightBlocks[endSweep],
+                                    leftBlocks[skips]);
                 for(int site = skips, end = lSFinal - 1; site < end; site++)
                 {
                     data.compBlock = rightBlocksStart + (lSys - 4 - site);
