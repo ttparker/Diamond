@@ -130,8 +130,7 @@ int main()
         std::vector<TheBlock> leftBlocks(lSys - 2 - skips),
                               rightBlocks(lSys - 2 - skips);
              // initialize system - the last block is only used for odd-size ED
-        TheBlock *leftBlocksStart = leftBlocks.data(),
-                 *rightBlocksStart = rightBlocks.data();
+        TheBlock* rightBlocksStart = rightBlocks.data();
         leftBlocks[0] = rightBlocks[0] = TheBlock(data.ham);
                                                // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
@@ -173,33 +172,29 @@ int main()
                                    rightBlocks[lEFinal - 1]);
             for(int i = 1; i <= nSweeps; i++)       // perform the fDMRG sweeps
             {
-                for(int site = lSFinal - 1, end = lSys - 4 - skips; site < end;
-                    site++)
-                {
-                    data.compBlock = rightBlocksStart + (lSys - 4 - site);
-                    data.beforeCompBlock = rightBlocksStart + (lSys - 5 - site);
+                data.compBlock = rightBlocksStart + lEFinal - 1;
+                data.beforeCompBlock = data.compBlock - 1;
+                for(int site = lSFinal - 1; site < endSweep;
+                    site++, data.compBlock--, data.beforeCompBlock--)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
                                                                       psiGround);
-                };
                 reflectPredictedPsi(psiGround, leftBlocks[endSweep],
                                     rightBlocks[skips]);
                                // reflect the system to reverse sweep direction
-                for(int site = skips, end = lSys - 4 - skips; site < end; site++)
-                {
-                    data.compBlock = leftBlocksStart + (lSys - 4 - site);
-                    data.beforeCompBlock = leftBlocksStart + (lSys - 5 - site);
+                data.compBlock = &leftBlocks[endSweep];
+                data.beforeCompBlock = data.compBlock - 1;
+                for(int site = skips; site < endSweep;
+                    site++, data.compBlock--, data.beforeCompBlock--)
                     rightBlocks[site + 1] = rightBlocks[site].nextBlock(data,
                                                                         psiGround);
-                };
                 reflectPredictedPsi(psiGround, rightBlocks[endSweep],
                                     leftBlocks[skips]);
-                for(int site = skips, end = lSFinal - 1; site < end; site++)
-                {
-                    data.compBlock = rightBlocksStart + (lSys - 4 - site);
-                    data.beforeCompBlock = rightBlocksStart + (lSys - 5 - site);
+                data.compBlock = rightBlocksStart + endSweep;
+                data.beforeCompBlock = data.compBlock - 1;
+                for(int site = skips, end = lSFinal - 1; site < end;
+                    site++, data.compBlock--, data.beforeCompBlock--)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
                                                                       psiGround);
-                };
                 std::cout << "Sweep " << i << " complete." << std::endl;
             };
         };
