@@ -80,21 +80,24 @@ int main()
         for(int i = 0; i < nCouplingConstants; i++)
             filein >> couplingConstants[i];
         int targetQNum,
-            rangeOfObservables;
-        double groundStateErrorTolerance;
-        int nSweeps;                        // number of sweeps to be performed
-        filein >> targetQNum >> rangeOfObservables >> groundStateErrorTolerance
-               >> data.mMax >> nSweeps;
+            rangeOfObservables, // number of sites at which to measure observables
+            nSweeps;                        // number of sweeps to be performed
+        filein >> targetQNum >> rangeOfObservables >> data.mMax >> nSweeps;
         if(rangeOfObservables == -1)
             rangeOfObservables = lSys;
+        std::vector<double> groundStateErrorTolerances(nSweeps + 1);
+        for(int i = 0; i <= nSweeps; i++)
+            filein >> groundStateErrorTolerances[i];
         
         fileout << "System length: " << lSys << "\nCoupling constants:";
-        for(int i = 0; i < nCouplingConstants; i++)
-            fileout << " " << couplingConstants[i];
+        for(double couplingConstant : couplingConstants)
+            fileout << " " << couplingConstant;
          fileout << "\nTargeted quantum number: " << targetQNum
-                 << "\nLanczos tolerance: " << groundStateErrorTolerance
                  << "\nBond dimension: " << data.mMax << "\nNumber of sweeps: "
-                 << nSweeps << std::endl << std::endl;
+                 << nSweeps << "\nLanczos tolerances:";
+        for(double groundStateErrorTolerance : groundStateErrorTolerances)
+            fileout << " " << groundStateErrorTolerance;
+        fileout << std::endl << std::endl;
         data.ham.setParams(couplingConstants, targetQNum, lSys);
         int skips = 0,
             runningKeptStates = d * d;
@@ -137,8 +140,8 @@ int main()
             // note: this iDMRG code assumes parity symmetry of the Hamiltonian
         data.exactDiag = true;
         data.infiniteStage = true;
-        data.lancTolerance = groundStateErrorTolerance
-                             * groundStateErrorTolerance / 2;
+        data.lancTolerance = groundStateErrorTolerances[0]
+                             * groundStateErrorTolerances[0] / 2;
         rmMatrixXd psiGround;                     // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1]
@@ -170,9 +173,12 @@ int main()
             int endSweep = lSys - 4 - skips;              // last site of sweep
             psiGround = randomSeed(leftBlocks[lSFinal - 1],
                                    rightBlocks[lEFinal - 1]);
-            for(int i = 1; i <= nSweeps; i++)       // perform the fDMRG sweeps
+            for(int sweep = 1; sweep <= nSweeps; sweep++)
+                                                    // perform the fDMRG sweeps
             {
                 data.compBlock = rightBlocksStart + lEFinal - 1;
+                data.lancTolerance = groundStateErrorTolerances[sweep]
+                                     * groundStateErrorTolerances[sweep] / 2;
                 data.beforeCompBlock = data.compBlock - 1;
                 for(int site = lSFinal - 1; site < endSweep;
                     site++, data.compBlock--, data.beforeCompBlock--)
@@ -195,7 +201,7 @@ int main()
                     site++, data.compBlock--, data.beforeCompBlock--)
                     leftBlocks[site + 1] = leftBlocks[site].nextBlock(data,
                                                                       psiGround);
-                std::cout << "Sweep " << i << " complete." << std::endl;
+                std::cout << "Sweep " << sweep << " complete." << std::endl;
             };
         };
         data.compBlock = rightBlocksStart + (lEFinal - 1);
