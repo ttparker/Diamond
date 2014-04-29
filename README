@@ -1,0 +1,29 @@
+Author: Edward (Teddy) Parker, tparker@physics.ucsb.edu
+Advised by: Leon Balents, KITP, Santa Barbara, CA, USA
+Last updated: April 2014
+
+This is a DMRG code for finding the ground state of a diamond chain with open boundary conditions (by default, the quantum Heisenberg magnet with adjustable cross-diamond coupling and an external field), which incorporates a U(1) symmetry of the Hamiltonian.  The files that should be modified between runs are the following:
+
+[System name].cpp: specifies the types of nearest-neighbor and next-nearest-neighbor couplings.  The specific values of the coupling constants and the targeted conserved quantum number, however, are read in from ./Input/Input at runtime.
+
+GlobalHamiltonianParameters.h: specifies the size of the single-site Hilbert space, the number of distinct coupling constants, and the number of independent coupling operators.
+
+GlobalPrecisionParameters.h: specifies the minimum and maximum number of allowed Lanczos iterations and the threshhold at which to round observables to zero.
+
+ObservableOps.h: lists all the single-site observable operators that will used in finding expectation values of observables (e.g. the Pauli matrices).
+
+**********
+
+The rest of the code modules (which should not be modified, unless you know what you're doing) are, in the order in which they are accessed during execution:
+
+main.cpp: Reads in the system parameters from ./Input/Input, runs the infinite-stage and finite-stage DMRG algorithm, calculates the observables, and writes them to ./Output.
+
+TheBlock.cpp: The main body of the DMRG algorithm.  Joins the system and environmental blocks into the superblock, diagonalizes it, forms the reduced density matrix from the superblock ground state, finds highest-weighted eigenstates of the density matrix, projects the expanded system block into the subspace spanned by those eigenstates, and changes the ground eigenstate into the new basis to serve as the seed for the next DMRG step.  Also forms the final superblock Hamiltonain after all sweeps have been completed.
+
+FreeFunctions.cpp: assorted miscellaneous functions that are freely usuable by all classes.  Contains functions to generate a random seed for the Lanczos algorithm during infinite-stage DMRG, to tensor together lists of states' quantum numbers, to reflect the predicted eigenstate when the sweep reaches the edge of the system, and to calculate one-site expectation values and two-site correlation functions at all specified sites in the system once the final superblock Hamiltonian has been formed.
+
+ESolver.cpp: Implements the conservation of quantum numbers.  Contains three classes: HamSolver inputs a superblock Hamiltonian, a list of associated quantum numbers, and a seed ground state (among other arguments), and calculates the ground state eigenvector and eigenvalue using the Lanczos algorithm.  DMSolver inputs the reduced density matrix and the list of associated quantum numbers (among other arguments), and diagonalizes the density matrix using dense matrix methods within each symmetry sector.  Sector is used by both HamSolver and DMSolver to represent a given symmetry sector and the associated block operator.  HamSolver and DMSolver are each called once by TheBlock.cpp during each DMRG step.
+
+Lanczos.cpp: Lanczos algorithm for finding the lowest eigenstate of the superblock Hamiltonain, called once by ESolver.cpp during each DMRG step.
+
+FinalSuperblock.cpp: Forms the final superblock Hamiltonian after all the finite-stage DMRG sweeps have been completed, and calculates the expectation value of an arbitrary observable operator.
