@@ -1,5 +1,5 @@
 #include <fstream>
-#include "EffectiveHamiltonian.h"
+#include "FinalSuperblock.h"
 #include "GlobalPrecisionParameters.h"
 
 using namespace Eigen;
@@ -33,7 +33,7 @@ void reflectPredictedPsi(rmMatrixXd& psiGround, const TheBlock& bigBlock,
 };
 
 VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
-                          int lSys, EffectiveHamiltonian& hSuperFinal,
+                          int lSys, FinalSuperblock& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,
                           std::vector<TheBlock>& rightBlocks,
                           std::ofstream& fileout)
@@ -57,7 +57,7 @@ VectorXd oneSiteExpValues(const MatrixDd& oneSiteOp, int rangeOfObservables,
 MatrixXd twoSiteExpValues(const MatrixDd& firstTwoSiteOp,
                           const MatrixDd& secondTwoSiteOp,
                           int rangeOfObservables,
-                          int lSys, EffectiveHamiltonian& hSuperFinal,
+                          int lSys, FinalSuperblock& hSuperFinal,
                           std::vector<TheBlock>& leftBlocks,
                           std::vector<TheBlock>& rightBlocks,
                           std::ofstream& fileout)

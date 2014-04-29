@@ -1,5 +1,5 @@
-#ifndef EFFECTIVEHAMILTONIAN_H
-#define EFFECTIVEHAMILTONIAN_H
+#ifndef FINALSUPERBLOCK_H
+#define FINALSUPERBLOCK_H
 
 #include <map>
 #include "TheBlock.h"
@@ -9,17 +9,17 @@ typedef std::vector<std::pair<MatrixDd, int>,
 typedef std::map<int, MatrixDd, std::less<int>,
                  Eigen::aligned_allocator<std::pair<const int, MatrixDd>>> opsMap;
 
-class EffectiveHamiltonian
+class FinalSuperblock
 {
     public:
         double gsEnergy;                                 // ground-state energy
         
-        EffectiveHamiltonian(const Eigen::MatrixXd& matFinal,
-                             const std::vector<int>& qNumList,
-                             const std::vector<int>& compQNumList,
-                             const stepData& data,
-                             const rmMatrixXd& psiGroundIn,
-                             int mSFinal, int mEFinal, int skips);
+        FinalSuperblock(const Eigen::MatrixXd& matFinal,
+                        const std::vector<int>& qNumList,
+                        const std::vector<int>& compQNumList,
+                        const stepData& data,
+                        const rmMatrixXd& psiGroundIn, int mSFinal,
+                        int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
                         std::vector<TheBlock>& rightBlocks);
         // calculates exectation value of a combination of single-site operators

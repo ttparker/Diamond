@@ -102,25 +102,25 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixXd& psiGround)
                                   // save expanded-block operators in new basis
 };
 
-EffectiveHamiltonian TheBlock::createHSuperFinal(const stepData& data,
-                                                 const rmMatrixXd& psiGround,
-                                                 int skips) const
+FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
+                                            const rmMatrixXd& psiGround,
+                                            int skips) const
 {
     int thisSiteType = l % nSiteTypes,
         compSiteType = data.compBlock -> l % nSiteTypes,
         compm = data.compBlock -> m;
-    return EffectiveHamiltonian(MatrixXd(kp(kp(hS, Id_d)
-                                            + data.ham.blockAdjacentSiteJoin(1, thisSiteType, off0RhoBasisH2)
-                                            + data.ham.blockAdjacentSiteJoin(2, thisSiteType, off1RhoBasisH2),
-                                            Id(compm * d))
-                                         + data.ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, compm)
-                                         + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                                         + data.ham.lSiterBlockJoin(thisSiteType, m, data.compBlock -> off0RhoBasisH2)
-                                         + kp(Id(m * d), data.ham.blockAdjacentSiteJoin(1, compSiteType, data.compBlock -> off0RhoBasisH2)
-                                                         + data.ham.blockAdjacentSiteJoin(2, compSiteType, data.compBlock -> off1RhoBasisH2)
-                                                         + kp(data.compBlock -> hS, Id_d))),
-                                qNumList, data.compBlock -> qNumList, data,
-                                psiGround, m, compm, skips);
+    return FinalSuperblock(MatrixXd(kp(kp(hS, Id_d)
+                                       + data.ham.blockAdjacentSiteJoin(1, thisSiteType, off0RhoBasisH2)
+                                       + data.ham.blockAdjacentSiteJoin(2, thisSiteType, off1RhoBasisH2),
+                                       Id(compm * d))
+                                    + data.ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, compm)
+                                    + data.ham.siteSiteJoin(thisSiteType, m, compm)
+                                    + data.ham.lSiterBlockJoin(thisSiteType, m, data.compBlock -> off0RhoBasisH2)
+                                    + kp(Id(m * d), data.ham.blockAdjacentSiteJoin(1, compSiteType, data.compBlock -> off0RhoBasisH2)
+                                                    + data.ham.blockAdjacentSiteJoin(2, compSiteType, data.compBlock -> off1RhoBasisH2)
+                                                    + kp(data.compBlock -> hS, Id_d))),
+                           qNumList, data.compBlock -> qNumList, data,
+                           psiGround, m, compm, skips);
 };
 
 MatrixXd TheBlock::changeBasis(const MatrixXd& mat) const

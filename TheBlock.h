@@ -3,7 +3,7 @@
 
 #include "Hamiltonian.h"
 
-class EffectiveHamiltonian;
+class FinalSuperblock;
 class TheBlock;
 
 struct stepData
@@ -37,9 +37,9 @@ class TheBlock
                                                      // performs each DMRG step
         Eigen::MatrixXd changeBasis(const Eigen::MatrixXd& mat) const;
                    // represents operators in the basis of the new system block
-        EffectiveHamiltonian createHSuperFinal(const stepData& data,
-                                               const rmMatrixXd& psiGround,
-                                               int skips) const;
+        FinalSuperblock createHSuperFinal(const stepData& data,
+                                          const rmMatrixXd& psiGround,
+                                          int skips) const;
                     // HSuperFinal, mSFinal, qNumList, oneSiteQNums, targetQNum
     
     private:
