@@ -23,12 +23,12 @@ int main()
     filein >> nTrials >> calcObservables;
     bool calcOneSiteExpValues;
     int indexOfOneSiteOp;
-    MatrixDd oneSiteOp;
+    obsMatrixD_t oneSiteOp;
     bool calcTwoSiteExpValues;
     int indexOfFirstTwoSiteOp,
         indexOfSecondTwoSiteOp;
-    MatrixDd firstTwoSiteOp,
-             secondTwoSiteOp;
+    obsMatrixD_t firstTwoSiteOp,
+                 secondTwoSiteOp;
     #include "ObservableOps.h"
     if(calcObservables)
     {

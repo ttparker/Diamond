@@ -4,10 +4,12 @@
 #include <map>
 #include "TheBlock.h"
 
-typedef std::vector<std::pair<MatrixDd, int>,
-                    Eigen::aligned_allocator<std::pair<MatrixDd, int>>> opsVec;
-typedef std::map<int, MatrixDd, std::less<int>,
-                 Eigen::aligned_allocator<std::pair<const int, MatrixDd>>> opsMap;
+typedef std::vector<std::pair<obsMatrixD_t, int>,
+                    Eigen::aligned_allocator<std::pair<obsMatrixD_t, int>>>
+                    opsVec;
+typedef std::map<int, obsMatrixD_t, std::less<int>,
+                 Eigen::aligned_allocator<std::pair<const int, obsMatrixD_t>>>
+                 opsMap;
 
 class FinalSuperblock
 {
@@ -33,12 +35,12 @@ class FinalSuperblock
             mEFinal,      // final number of states stored in environment block
             skips;                // number of edge sites in the position basis
         
-        void placeOp(const std::pair<MatrixDd, int>& op, opsMap& blockSide,
+        void placeOp(const std::pair<obsMatrixD_t, int>& op, opsMap& blockSide,
                      bool systemSide);
                     // assign each one-site observable to the appropriate block
-        Eigen::MatrixXd rhoBasisRep(const opsMap& blockOps,
-                                    std::vector<TheBlock>& blocks,
-                                    int blockSize) const;
+        obsMatrixX_t rhoBasisRep(const opsMap& blockOps,
+                                 std::vector<TheBlock>& blocks, int blockSize)
+                                 const;
                   // converts single-site operators into the system block basis
 };
 

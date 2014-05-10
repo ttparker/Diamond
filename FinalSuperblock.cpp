@@ -35,8 +35,8 @@ double FinalSuperblock::expValue(const opsVec& ops,
 {
     opsMap sysBlockOps, // observable operators that will act on the system block
            envBlockOps;                           // same for environment block
-    MatrixDd lFreeSite = Id_d,
-             rFreeSite = Id_d;
+    obsMatrixD_t lFreeSite = obsId_d,
+                 rFreeSite = obsId_d;
     bool opAtlFreeSite = false,
          opAtrFreeSite = false;
     for(const auto& opToEvaluate : ops) // split up operators into their blocks
@@ -49,8 +49,8 @@ double FinalSuperblock::expValue(const opsVec& ops,
             lFreeSite *= opToEvaluate.first;
             opAtlFreeSite = true;
         }
-        else if(site == lSFinal + 1)
-        {                                       // and right free-site operator
+        else if(site == lSFinal + 1)            // and right free-site operator
+        {
             rFreeSite *= opToEvaluate.first;
             opAtrFreeSite = true;
         }
@@ -62,68 +62,68 @@ double FinalSuperblock::expValue(const opsVec& ops,
         if(envBlockOps.empty())
         {                   // right-hand free site single-site observable case
             psiGround.resize(mSFinal * d * mEFinal, d);
-            return (psiGround
-                    * rFreeSite.transpose()
-                    * psiGround.adjoint()
-                   ).trace();
+            return re((psiGround
+                       * rFreeSite.transpose()
+                       * psiGround.adjoint()
+                      ).trace());
         }
         else
         {
             psiGround.resize(mSFinal * d, mEFinal * d);
-            return (psiGround.adjoint()
-                    * psiGround
-                    * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
-                         rFreeSite).transpose()
-                   ).trace();
+            return re((psiGround.adjoint()
+                       * psiGround
+                       * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
+                            rFreeSite).transpose()
+                      ).trace());
         }
     else if(envBlockOps.empty() && !opAtrFreeSite)
                             // observables in left-hand half of superblock case
         if(!opAtlFreeSite)              // all observables in system block case
         {
             psiGround.resize(mSFinal, d * mEFinal * d);
-            return (psiGround.adjoint()
-                    * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
-                    * psiGround
-                   ).trace();
+            return re((psiGround.adjoint()
+                       * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
+                       * psiGround
+                      ).trace());
         }
         else
         {
             psiGround.resize(mSFinal * d, mEFinal * d);
-            return (psiGround.adjoint()
-                    * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
-                         lFreeSite)
-                    * psiGround
-                   ).trace();
+            return re((psiGround.adjoint()
+                       * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
+                            lFreeSite)
+                       * psiGround
+                      ).trace());
         }
     else                    // observables in both halves of superblock case
     {
         psiGround.resize(mSFinal * d, mEFinal * d);
-        return (psiGround.adjoint()
-                * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
-                * psiGround
-                * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal), rFreeSite)
-                  .transpose()
-               ).trace();
+        return re((psiGround.adjoint()
+                   * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
+                   * psiGround
+                   * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal), rFreeSite)
+                     .transpose()
+                  ).trace());
     };
 };
 
-void FinalSuperblock::placeOp(const std::pair<MatrixDd, int>& op,
+void FinalSuperblock::placeOp(const std::pair<obsMatrixD_t, int>& op,
                               opsMap& blockSide, bool systemSide)
 {
     int lhSite = (systemSide ? op.second : lSupFinal - 1 - op.second);
     if(blockSide.count(lhSite))         // already an observable at this site?
         blockSide[lhSite] *= op.first;
     else
-        blockSide.insert(std::pair<int, MatrixDd>(lhSite, op.first));
+        blockSide.insert(std::pair<int, obsMatrixD_t>(lhSite, op.first));
 };
 
-MatrixXd FinalSuperblock::rhoBasisRep(const opsMap& blockOps,
-                                      std::vector<TheBlock>& blocks,
-                                      int blockSize) const
+obsMatrixX_t FinalSuperblock::rhoBasisRep(const opsMap& blockOps,
+                                          std::vector<TheBlock>& blocks,
+                                          int blockSize) const
 {
     if(blockOps.empty())
-        return Id(blocks[blockSize - 1].m);
-    MatrixXd rhoBasisBlockOp;
+        return obsId(blocks[blockSize - 1].m);
+    obsMatrixX_t rhoBasisBlockOp;
     const auto firstOp = blockOps.begin();
                 // first nontrivial site operator at which to start tensoring
     auto currentOp = firstOp;
@@ -137,21 +137,21 @@ MatrixXd FinalSuperblock::rhoBasisRep(const opsMap& blockOps,
     else
     {
         currentSite += (firstOp -> first - 1);
-        rhoBasisBlockOp = Id(currentSite -> m);
+        rhoBasisBlockOp = obsId(currentSite -> m);
     };
     const auto opsEnd = blockOps.end();
     for(const auto end = firstSite + (blockSize - 1); currentSite != end;
         currentSite++)
     {
-        MatrixXd primeBasisBlockOp = kp(rhoBasisBlockOp,
-                                        (currentOp != opsEnd
-                                         && currentSite - firstSite
-                                            == currentOp -> first - 1 ?
-                                        currentOp++ -> second :
-                                        Id_d));
+        obsMatrixX_t primeBasisBlockOp = kp(rhoBasisBlockOp,
+                                            (currentOp != opsEnd
+                                             && currentSite - firstSite
+                                                == currentOp -> first - 1 ?
+                                             currentOp++ -> second :
+                                             obsId_d));
         rhoBasisBlockOp = (currentSite - firstSite < skips ?
                            primeBasisBlockOp :
-                           currentSite -> changeBasis(primeBasisBlockOp));
+                           currentSite -> obsChangeBasis(primeBasisBlockOp));
     };
     return rhoBasisBlockOp;
 };

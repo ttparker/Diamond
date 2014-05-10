@@ -102,6 +102,11 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixXd& psiGround)
                                   // save expanded-block operators in new basis
 };
 
+obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const
+{
+    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+};
+
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             const rmMatrixXd& psiGround,
                                             int skips) const
