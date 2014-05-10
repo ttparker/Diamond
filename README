@@ -27,3 +27,25 @@ ESolver.cpp: Implements the conservation of quantum numbers.  Contains three cla
 Lanczos.cpp: Lanczos algorithm for finding the lowest eigenstate of the superblock Hamiltonain, called once by ESolver.cpp during each DMRG step.
 
 FinalSuperblock.cpp: Forms the final superblock Hamiltonian after all the finite-stage DMRG sweeps have been completed, and calculates the expectation value of an arbitrary observable operator.
+
+**********
+
+The numerical model-independent parameters (e.g. the values of the coupling constants and the precision parameters) are read at runtime from the file ./Input/Input, which reads in the following values:
+
+First, read in the parameters that don't change across trials:
+1. (int)  Number of trials
+2. (bool) Calculate observables (1) or only find the ground state energy (0)? (If 0, skip next 5 lines)
+3. (bool) Calculate one-site observables? (If 0, skip next line)
+4. (int)  Position of the one-site observable in the list of observables defined in ObservableOps.h
+5. (bool) Calculate two-site observables? (If 0, skip next 2 lines)
+6. (int)  Position of the first two-site observable in the list of observables defined in ObservableOps.h
+7. (int)  Position of the second two-site observable in the list of observables defined in ObservableOps.h
+
+Next, read in the parameters that change across trials (repeat the next block as many times as there are trials):
+8.  (int) System length - must be congruent to 1 mod 3
+9.  (List of doubles) Values of coupling constants (separate by spaces)
+10. (int) Targeted quantum number (i.e. # of up spins - # of down spins - must be compatible with system length)
+11. (int) Number of sites in center of system at which to calculate observables (must be less than or equal to system length and should have the same 		  parity - if not, the bias is leftward).  If -1, then calculates all sites.
+12. (int) Maximum number of stored states (i.e. bond dimension)
+13. (int) Number of fDRMG sweeps
+14. (list of doubles) Lanczos ground state error tolerance (i.e. maximum allowed norm of the difference between consecutive Lanczos iterations' ground 		  state vectors) for each sweep (must equal (number of fDMRG sweeps) + 1)
