@@ -38,37 +38,37 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstants,
     lSys = lSysIn;
 };
 
-MatrixXd Hamiltonian::blockAdjacentSiteJoin(int jType, int siteType,
-                                            const std::vector<MatrixXd>&
-                                            rhoBasisH2) const
+MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int jType, int siteType,
+                                             const std::vector<MatrixX_t>&
+                                             rhoBasisH2) const
 {
-    MatrixXd plusMinus = kp(rhoBasisSigmaplus, sigmaminus);
+    MatrixX_t plusMinus = kp(rhoBasisSigmaplus, sigmaminus);
     return BASJ(jType - 1, siteType) *
         (kp(rhoBasisSigmaz, sigmaz) + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixXd Hamiltonian::lBlockrSiteJoin(int siteType, const std::vector<MatrixXd>&
+MatrixX_t Hamiltonian::lBlockrSiteJoin(int siteType, const std::vector<MatrixX_t>&
                                       off0RhoBasisH2, int mlE) const
 {
-    MatrixXd plusMinus = kp(kp(off0RhoBasisSigmaplus, Id(d * mlE)), sigmaminus);
+    MatrixX_t plusMinus = kp(kp(off0RhoBasisSigmaplus, Id(d * mlE)), sigmaminus);
     return LBRSJ[siteType] * (kp(kp(off0RhoBasisSigmaz, Id(d * mlE)), sigmaz)
                               + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixXd Hamiltonian::lSiterBlockJoin(int siteType, int ml,
-                                      const std::vector<MatrixXd>&
-                                      off0RhoBasisH2) const
+MatrixX_t Hamiltonian::lSiterBlockJoin(int siteType, int ml,
+                                       const std::vector<MatrixX_t>&
+                                       off0RhoBasisH2) const
 {
-    MatrixXd plusMinus = kp(sigmaplus, off0RhoBasisSigmaplus.adjoint());
+    MatrixX_t plusMinus = kp(sigmaplus, off0RhoBasisSigmaplus.adjoint());
     return LSRBJ[siteType] *
         kp(kp(Id(ml), kp(sigmaz, off0RhoBasisSigmaz)
                       + 2 * (plusMinus + plusMinus.adjoint())),
            Id_d);
 };
 
-MatrixXd Hamiltonian::siteSiteJoin(int siteType, int ml, int mlE) const
+MatrixX_t Hamiltonian::siteSiteJoin(int siteType, int ml, int mlE) const
 {
-    MatrixXd plusMinus = kp(kp(sigmaplus, Id(mlE)), sigmaminus);
+    MatrixX_t plusMinus = kp(kp(sigmaplus, Id(mlE)), sigmaminus);
     return SSJ[siteType] * kp(Id(ml), kp(kp(sigmaz, Id(mlE)), sigmaz)
                                       + 2 * (plusMinus + plusMinus.adjoint()));
 };

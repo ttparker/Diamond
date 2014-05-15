@@ -9,7 +9,7 @@ using namespace Eigen;
 int main()
 {
     clock_t start = clock();
-
+    
     std::ifstream filein("Input/Input");
     if(!filein)
     {
@@ -142,7 +142,7 @@ int main()
         data.infiniteStage = true;
         data.lancTolerance = groundStateErrorTolerances[0]
                              * groundStateErrorTolerances[0] / 2;
-        rmMatrixXd psiGround;                     // seed for Lanczos algorithm
+        rmMatrixX_t psiGround;                    // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(data, psiGround);
@@ -239,14 +239,14 @@ int main()
         std::cout << std::endl;
         clock_t stopTrial = clock();
         fileout << "Elapsed time: "
-                << double(stopTrial - startTrial)/CLOCKS_PER_SEC << " s"
+                << float(stopTrial - startTrial)/CLOCKS_PER_SEC << " s"
                 << std::endl;
         fileout.close();
     };
     filein.close();
     
     clock_t stop = clock();
-    std::cout << "Done. Elapsed time: " << double(stop - start)/CLOCKS_PER_SEC
+    std::cout << "Done. Elapsed time: " << float(stop - start)/CLOCKS_PER_SEC
               << " s" << std::endl;
 
     return 0;

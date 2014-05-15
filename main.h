@@ -8,23 +8,32 @@
 #include <unsupported/Eigen/KroneckerProduct>
 #include "GlobalHamiltonianParameters.h"
 
-typedef Eigen::Matrix<double, d, d> MatrixDd;
-typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-    rmMatrixXd;
+#ifdef realHamiltonian
+    typedef Eigen::Matrix<double, d, d> MatrixD_t;
+    typedef Eigen::MatrixXd MatrixX_t;
+    typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+        rmMatrixX_t;
+    typedef Eigen::VectorXd VectorX_t;
+#elif defined(complexHamiltonian)
+    typedef Eigen::Matrix<std::complex<double>, d, d> MatrixD_t;
+    typedef Eigen::MatrixXcd MatrixX_t;
+    typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic,
+                          Eigen::RowMajor> rmMatrixX_t;
+    typedef Eigen::VectorXcd VectorX_t;
+#endif
 
-#ifdef realObservables
+#if defined(realHamiltonian) && defined(realObservables)
     #define obsId_d Matrix<double, d, d>::Identity()
     #define obsId(size) MatrixXd::Identity(size, size)
-    #define re
+    #define obsRe
     
     typedef Eigen::Matrix<double, d, d> obsMatrixD_t;
     typedef Eigen::MatrixXd obsMatrixX_t;
-#endif
-
-#ifdef complexObservables
+#elif defined(complexObservables) || defined(complexHamiltonian)
+    // are their any complex elements in either the Hamiltonian or the observables?
     #define obsId_d Matrix<std::complex<double>, d, d>::Identity()
     #define obsId(size) MatrixXcd::Identity(size, size)
-    #define re std::real
+    #define obsRe std::real
     
     typedef Eigen::Matrix<std::complex<double>, d, d> obsMatrixD_t;
     typedef Eigen::MatrixXcd obsMatrixX_t;

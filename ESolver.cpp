@@ -5,9 +5,9 @@
 
 using namespace Eigen;
 
-Sector::Sector(const std::vector<int>& qNumList, int qNum, const MatrixXd& mat)
+Sector::Sector(const std::vector<int>& qNumList, int qNum, const MatrixX_t& mat)
     : multiplicity(std::count(qNumList.begin(), qNumList.end(), qNum)),
-      sectorMat(MatrixXd(multiplicity, multiplicity)),
+      sectorMat(MatrixX_t(multiplicity, multiplicity)),
       sectorColumnCounter(multiplicity)
 {
     positions.reserve(multiplicity);
@@ -21,17 +21,17 @@ Sector::Sector(const std::vector<int>& qNumList, int qNum, const MatrixXd& mat)
             sectorMat(elmt++) = mat(i, j);
 };
 
-VectorXd Sector::filledOutEvec(VectorXd sectorEvec, int fullMatrixSize) const
+VectorX_t Sector::filledOutEvec(VectorX_t sectorEvec, int fullMatrixSize) const
 {
-    VectorXd longEvec = VectorXd::Zero(fullMatrixSize);
+    VectorX_t longEvec = VectorX_t::Zero(fullMatrixSize);
     for(int i = 0; i < multiplicity; i++)
         longEvec(positions[i]) = sectorEvec(i);
     return longEvec;
 };
 
-double Sector::solveForLowest(VectorXd& bigSeed, double lancTolerance)
+double Sector::solveForLowest(VectorX_t& bigSeed, double lancTolerance)
 {
-    rmMatrixXd littleSeed(multiplicity, 1);
+    rmMatrixX_t littleSeed(multiplicity, 1);
     for(int i = 0; i < multiplicity; i++)
         littleSeed(i) = bigSeed(positions[i]);
     littleSeed /= littleSeed.norm();
@@ -45,21 +45,21 @@ void Sector::solveForAll()
     solver.compute(sectorMat);
 };
 
-Eigen::VectorXd Sector::nextHighestEvec(int fullMatrixSize)
+VectorX_t Sector::nextHighestEvec(int fullMatrixSize)
 {
     return filledOutEvec(solver.eigenvectors().col(--sectorColumnCounter),
                          fullMatrixSize);
 };
 
-HamSolver::HamSolver(const MatrixXd& mat, const std::vector<int>& qNumList,
-                     int targetQNum, rmMatrixXd& bigSeed, double lancTolerance)
+HamSolver::HamSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
+                     int targetQNum, rmMatrixX_t& bigSeed, double lancTolerance)
     : lowestEvec(bigSeed)
 {
     Sector targetSector(qNumList, targetQNum, mat);
     lowestEval = targetSector.solveForLowest(lowestEvec, lancTolerance);
 };
 
-DMSolver::DMSolver(const Eigen::MatrixXd& mat, const std::vector<int>& qNumList,
+DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                    int evecsToKeep)
 {
     std::map<int, Sector> sectors;                 // key is the quantum number
@@ -73,15 +73,15 @@ DMSolver::DMSolver(const Eigen::MatrixXd& mat, const std::vector<int>& qNumList,
         for(int i = 0, end = sectors[qNum].multiplicity; i < end; i++)
         {
             double eval = sectors[qNum].solver.eigenvalues()(i);
-//            if(eval == 0.)                      // singular density matrix case
-//                eval = rand()%10000 * 1e-24;
+            if(eval == 0.)                      // singular density matrix case
+                eval = rand()%10000 * 1e-24;
             indexedEvals.insert(std::pair<double, int>(eval, qNum));
                                              // add indexed eigenvalues to list
         };
     };
     highestEvecQNums.reserve(evecsToKeep);
     int matSize = mat.rows();
-    highestEvecs = MatrixXd::Zero(matSize, evecsToKeep);
+    highestEvecs = MatrixX_t::Zero(matSize, evecsToKeep);
     auto currentIndexedEval = indexedEvals.rbegin();
     for(int j = 0; j < evecsToKeep; j++)
     {

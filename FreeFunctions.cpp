@@ -4,9 +4,9 @@
 
 using namespace Eigen;
 
-rmMatrixXd randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock)
+rmMatrixX_t randomSeed(const TheBlock& leftBlock, const TheBlock& rightBlock)
 {
-    rmMatrixXd seed = rmMatrixXd::Random(leftBlock.m * d * rightBlock.m * d, 1);
+    rmMatrixX_t seed = rmMatrixX_t::Random(leftBlock.m * d * rightBlock.m * d, 1);
     seed /= seed.norm();
     return seed;
 };
@@ -24,7 +24,7 @@ std::vector<int> vectorProductSum(const std::vector<int>& first,
     return prod;
 };
 
-void reflectPredictedPsi(rmMatrixXd& psiGround, const TheBlock& bigBlock,
+void reflectPredictedPsi(rmMatrixX_t& psiGround, const TheBlock& bigBlock,
                          const TheBlock& littleBlock)
 {
     psiGround.resize(bigBlock.m * d, littleBlock.m * d);

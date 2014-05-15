@@ -16,11 +16,11 @@ class FinalSuperblock
     public:
         double gsEnergy;                                 // ground-state energy
         
-        FinalSuperblock(const Eigen::MatrixXd& matFinal,
+        FinalSuperblock(const MatrixX_t& matFinal,
                         const std::vector<int>& qNumList,
                         const std::vector<int>& compQNumList,
                         const stepData& data,
-                        const rmMatrixXd& psiGroundIn, int mSFinal,
+                        const rmMatrixX_t& psiGroundIn, int mSFinal,
                         int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
                         std::vector<TheBlock>& rightBlocks);
@@ -28,7 +28,7 @@ class FinalSuperblock
     
     private:
         int lSupFinal;                                     // final system size
-        rmMatrixXd psiGround;                  // final superblock ground state
+        rmMatrixX_t psiGround;                 // final superblock ground state
         int lSFinal,                            // final length of system block
             lEFinal,                       // final length of environment block
             mSFinal,           // final number of states stored in system block

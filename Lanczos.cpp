@@ -1,7 +1,14 @@
-#include <cmath>
 #include "main.h"
 #include "ESolver.h"
 #include "GlobalPrecisionParameters.h"
+
+#ifdef realHamiltonian
+    #define re
+    #include <cmath>
+#endif
+#ifdef complexHamiltonian
+    #define re std::real
+#endif
 
 extern "C"
 {
@@ -13,24 +20,24 @@ extern "C"
 
 using namespace Eigen;
 
-double Sector::lanczos(const MatrixXd& mat, rmMatrixXd& seed,
+double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
                        double lancTolerance)
 {
     int matSize = mat.rows();
     if(matSize == 1)
-        return mat(0, 0);
+        return re(mat(0, 0));
     const int minIters = std::min(matSize, globalMinLancIters),
               maxIters = std::min(matSize, globalMaxLancIters);
     std::vector<double> a,
                         b;
     a.reserve(minIters);
     b.reserve(minIters);
-    VectorXd x = seed;
-    MatrixXd basisVecs = x;
+    VectorX_t x = seed;
+    MatrixX_t basisVecs = x;
     x.noalias() = mat * basisVecs;
-    a.push_back(seed.col(0).dot(x));
+    a.push_back(re(seed.col(0).dot(x)));
     b.push_back(0.);
-    VectorXd oldGS;
+    VectorX_t oldGS;
     int i = 0;                                      // iteration counter
     char JOBZ = 'V',                                // define dstemr arguments
          RANGE = 'I';
@@ -70,7 +77,7 @@ double Sector::lanczos(const MatrixXd& mat, rmMatrixXd& seed,
         basisVecs.conservativeResize(NoChange, i + 1);
         basisVecs.col(i) = x / b[i];
         x.noalias() = mat * basisVecs.col(i) - b[i] * basisVecs.col(i - 1);
-        a.push_back(basisVecs.col(i).dot(x));
+        a.push_back(re(basisVecs.col(i).dot(x)));
         
         // Lanczos stage 2: diagonalize tridiagonal matrix
         N++;

@@ -3,11 +3,11 @@
 
 using namespace Eigen;
 
-FinalSuperblock::FinalSuperblock(const MatrixXd& matFinal,
+FinalSuperblock::FinalSuperblock(const MatrixX_t& matFinal,
                                  const std::vector<int>& qNumList,
                                  const std::vector<int>& compQNumList,
                                  const stepData& data,
-                                 const rmMatrixXd& psiGroundIn, int mSFinal,
+                                 const rmMatrixX_t& psiGroundIn, int mSFinal,
                                  int mEFinal, int skips)
     : lSupFinal(data.ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
@@ -57,53 +57,55 @@ double FinalSuperblock::expValue(const opsVec& ops,
         else
             placeOp(opToEvaluate, envBlockOps, false);
     };
+    
+    //evaluate observable:
     if(sysBlockOps.empty() && !opAtlFreeSite)
                         // observables in right-hand half of superblock case
         if(envBlockOps.empty())
         {                   // right-hand free site single-site observable case
             psiGround.resize(mSFinal * d * mEFinal, d);
-            return re((psiGround
-                       * rFreeSite.transpose()
-                       * psiGround.adjoint()
-                      ).trace());
+            return obsRe((psiGround
+                          * rFreeSite.transpose()
+                          * psiGround.adjoint()
+                         ).trace());
         }
         else
         {
             psiGround.resize(mSFinal * d, mEFinal * d);
-            return re((psiGround.adjoint()
-                       * psiGround
-                       * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
-                            rFreeSite).transpose()
-                      ).trace());
+            return obsRe((psiGround.adjoint()
+                          * psiGround
+                          * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal),
+                               rFreeSite).transpose()
+                         ).trace());
         }
     else if(envBlockOps.empty() && !opAtrFreeSite)
                             // observables in left-hand half of superblock case
         if(!opAtlFreeSite)              // all observables in system block case
         {
             psiGround.resize(mSFinal, d * mEFinal * d);
-            return re((psiGround.adjoint()
-                       * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
-                       * psiGround
-                      ).trace());
+            return obsRe((psiGround.adjoint()
+                          * rhoBasisRep(sysBlockOps, leftBlocks, lSFinal)
+                          * psiGround
+                         ).trace());
         }
         else
         {
             psiGround.resize(mSFinal * d, mEFinal * d);
-            return re((psiGround.adjoint()
-                       * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
-                            lFreeSite)
-                       * psiGround
-                      ).trace());
+            return obsRe((psiGround.adjoint()
+                          * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal),
+                               lFreeSite)
+                          * psiGround
+                         ).trace());
         }
     else                    // observables in both halves of superblock case
     {
         psiGround.resize(mSFinal * d, mEFinal * d);
-        return re((psiGround.adjoint()
-                   * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
-                   * psiGround
-                   * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal), rFreeSite)
-                     .transpose()
-                  ).trace());
+        return obsRe((psiGround.adjoint()
+                      * kp(rhoBasisRep(sysBlockOps, leftBlocks, lSFinal), lFreeSite)
+                      * psiGround
+                      * kp(rhoBasisRep(envBlockOps, rightBlocks, lEFinal), rFreeSite)
+                        .transpose()
+                     ).trace());
     };
 };
 
