@@ -34,7 +34,7 @@ double Sector::solveForLowest(VectorX_t& bigSeed, double lancTolerance)
     rmMatrixX_t littleSeed(multiplicity, 1);
     for(int i = 0; i < multiplicity; i++)
         littleSeed(i) = bigSeed(positions[i]);
-    littleSeed /= littleSeed.norm();
+    littleSeed.normalize();
     double lowestEval = lanczos(sectorMat, littleSeed, lancTolerance);
     bigSeed = filledOutEvec(littleSeed, bigSeed.rows());
     return lowestEval;
