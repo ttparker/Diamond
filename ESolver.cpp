@@ -64,7 +64,12 @@ DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
 {
     std::map<int, Sector> sectors;                 // key is the quantum number
     std::map<double, int> indexedEvals;              // eigenvalue, then sector
-    std::set<int> qNumSet(qNumList.begin(), qNumList.end());
+    std::set<int, std::greater<int>> qNumSet(qNumList.begin(), qNumList.end());
+    // set of quantum numbers are stored in descending order so that if density
+    // matrix has high nullity, higher-number null states are stored with higher
+    // weight
+    double nullStateCounter = 0.;        // how many density-matrix eigenstates
+                         // so far have zero weight - counts downward from zero
     for(int qNum : qNumSet)                 // make list of indexed eigenvalues
     {
         sectors.insert(sectors.end(),                          // create sector
@@ -73,9 +78,8 @@ DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
         for(int i = 0, end = sectors[qNum].multiplicity; i < end; i++)
         {
             double eval = sectors[qNum].solver.eigenvalues()(i);
-            if(eval == 0.)                      // singular density matrix case
-                eval = rand()%10000 * 1e-24;
-            indexedEvals.insert(std::pair<double, int>(eval, qNum));
+            indexedEvals.insert(std::pair<double, int>
+                (eval == 0. ? nullStateCounter-- : eval, qNum));
                                              // add indexed eigenvalues to list
         };
     };
