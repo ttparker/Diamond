@@ -147,9 +147,11 @@ int main()
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(data, psiGround);
         data.exactDiag = completeED;
-        for(int site = skips, end = lEFinal - 1; site < end; site++)   // iDMRG
+        data.compBlock = rightBlocksStart + skips;
+        for(int site = skips, end = lEFinal - 1; site < end; site++,
+                                                             data.compBlock++)
+                                                                       // iDMRG
         {
-            data.compBlock = rightBlocksStart + site;
             psiGround = randomSeed(leftBlocks[site], rightBlocks[site]);
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(data, psiGround);
@@ -164,7 +166,7 @@ int main()
             leftBlocks[lSFinal - 1] = leftBlocks[lSFinal - 2]
                                       .nextBlock(data, psiGround);
         };
-        if(nSweeps == 0 || completeED)
+        if(completeED || nSweeps == 0)
             psiGround = randomSeed(leftBlocks[lSFinal - 1],
                                    rightBlocks[lEFinal - 1]);
         else
@@ -177,7 +179,7 @@ int main()
             for(int sweep = 1; sweep <= nSweeps; sweep++)
                                                     // perform the fDMRG sweeps
             {
-                data.compBlock = rightBlocksStart + lEFinal - 1;
+                data.compBlock = rightBlocksStart + (lEFinal - 1);
                 data.lancTolerance = groundStateErrorTolerances[sweep]
                                      * groundStateErrorTolerances[sweep] / 2;
                 data.beforeCompBlock = data.compBlock - 1;

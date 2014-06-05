@@ -33,7 +33,8 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     tempOff1RhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
     if(data.exactDiag)
-    { // if near edge of system, no truncation necessary so skip DMRG algorithm
+      // if near edge of system, no truncation necessary so skip DMRG algorithm
+    {
         for(int i = 0; i < indepCouplingOperators; i++)
         {
             tempOff0RhoBasisH2.push_back(kp(Id(m), data.ham.h2[i]));
