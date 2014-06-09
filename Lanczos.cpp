@@ -38,8 +38,8 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
     a.push_back(re(seed.col(0).dot(x)));
     b.push_back(0.);
     VectorX_t oldGS;
-    int i = 0;                                      // iteration counter
-    char JOBZ = 'V',                                // define dstemr arguments
+    int i = 0;                                             // iteration counter
+    char JOBZ = 'V',                                 // define dstemr arguments
          RANGE = 'I';
     int N = 1;
     std::vector<double> D,
@@ -66,6 +66,8 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
     std::vector<int> IWORK;
     int LIWORK,
         INFO;
+    double gStateDiff;
+          // change in ground state vector across subsequent Lanczos iterations
     do
     {
         i++;
@@ -92,7 +94,7 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
                 W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
                 &optLWORK, &LWORK, &optLIWORK, &LIWORK, &INFO);
-                                    // query for optimal workspace allocations
+                                     // query for optimal workspace allocations
         LWORK = int(optLWORK);
         WORK.reserve(LWORK);
         LIWORK = optLIWORK;
@@ -102,14 +104,22 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
                 WORK.data(), &LWORK, IWORK.data(), &LIWORK, &INFO);
                                                       // calculate ground state
         seed = (basisVecs * Z).normalized();
-    } while(N < minIters ||
-            (std::abs(1 - std::abs(seed.col(0).dot(oldGS))) > lancTolerance
-             && N < maxIters));
-    if(N == maxIters)
+        gStateDiff = std::abs(1 - std::abs(seed.col(0).dot(oldGS)));
+    } while(N < minIters || (N < maxIters && gStateDiff > lancTolerance));
+    if(N == maxIters && gStateDiff > lancTolerance)
+                          // check if last iteration converges to an eigenstate
     {
-        std::cerr << "Lanczos algorithm failed to converge after " << N
-                  << " iterations." << std::endl;
-        exit(EXIT_FAILURE);
+        double gStateError = std::abs(1 - std::abs(seed.col(0)
+                                                   .dot((mat * seed).col(0)
+                                                        .normalized())));
+        if(gStateError > lancTolerance)
+        {
+            std::cerr << "Lanczos algorithm failed to converge after "
+                      << maxIters << " iterations. The inner product of the "
+                      << "final approximate ground state and its normalized "
+                      << "image differs from 1 by " << gStateError << std::endl;
+            exit(EXIT_FAILURE);
+        };
     };
     return W.front();
 };
