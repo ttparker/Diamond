@@ -49,15 +49,29 @@ int main()
     
     std::ofstream infoout("Output/Info");
     if(infoout)
+    {
         infoout << "Number of trials: " << nTrials
-                << "\nCalculate one-site observables? "
-                << (calcOneSiteExpValues ? "Yes" : "No")
-                << "\nIndex of one-site observable: " << indexOfOneSiteOp
-                << "\nCalculate two-site observables? "
-                << (calcTwoSiteExpValues ? "Yes" : "No")
-                << "\nIndices of two-site observables: " << indexOfFirstTwoSiteOp
-                << " " << indexOfSecondTwoSiteOp << "\nObservables threshold: "
-                << observableThreshold << std::endl;
+                << "\nCalculate observables? "
+                << (calcObservables ? "Yes" : "No") << std::endl;
+        if(calcObservables)
+        {
+            infoout << "Calculate one-site observables? ";
+            if(calcOneSiteExpValues)
+                infoout << "Yes\nIndex of one-site observable: "
+                        << indexOfOneSiteOp << std::endl;
+            else
+                infoout << "No" << std::endl;
+            infoout << "Calculate two-site observables? ";
+            if(calcTwoSiteExpValues)
+                infoout << "Yes\nIndices of two-site observables: "
+                        << indexOfFirstTwoSiteOp << " "
+                        << indexOfSecondTwoSiteOp << std::endl;
+            else
+                infoout << "No" << std::endl;
+            infoout << "Observables threshold: " << observableThreshold
+                    << std::endl;
+        };
+    }
     else
     {
         std::cerr << "Couldn't open output files." << std::endl;
