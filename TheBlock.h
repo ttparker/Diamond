@@ -47,7 +47,9 @@ class TheBlock
                 // tracks the conserved quantum number of each row/column of hS
         MatrixX_t hS;                                      // block Hamiltonian
         std::vector<MatrixX_t> off0RhoBasisH2,
-                               off1RhoBasisH2;
+                               off1RhoBasisH2,
+                               off2RhoBasisH2,
+                               off5RhoBasisH2;
             // density-matrix-basis coupling operators - "off" means the offset
             // between this block, in which the operator is represented, and
             // the site on which it acts

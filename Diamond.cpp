@@ -1,8 +1,6 @@
 #include "Hamiltonian.h"
 
-#define a couplingConstants[0]
-#define b couplingConstants[1]
-#define c couplingConstants[2]
+#define j1 couplingConstants[0]
 #define sigmaplus h2[0]
 #define sigmaz h2[1]
 #define sigmaminus h2[2]
@@ -29,11 +27,11 @@ Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
 void Hamiltonian::setParams(const std::vector<double>& couplingConstants,
                             int targetQNumIn, int lSysIn)
 {
-    BASJ << a,  c, a,
-            0., b, b;
-    LBRSJ = {b, b, 0.};
-    LSRBJ = {b, 0., b};
-    SSJ = {c, a, a};
+    BASJ << j1, 0., j1,
+            0., j1, j1;
+    LBRSJ = {j1, j1, 0.};
+    LSRBJ = {j1, 0., j1};
+    SSJ = {0., j1, j1};
     targetQNum = targetQNumIn;
     lSys = lSysIn;
 };

@@ -38,6 +38,8 @@ class Hamiltonian
                   lBlockrSiteJoin(int siteType,
                                   const std::vector<MatrixX_t>& off0RhoBasisH2,
                                   int mlE) const,
+                  blockBlockJoin(int jType, int siteType,
+                                 const std::vector<MatrixX_t>& rhoBasisH2) const,
                   lSiterBlockJoin(int siteType, int ml,
                                   const std::vector<MatrixX_t>& off0RhoBasisH2)
                                   const,
