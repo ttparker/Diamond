@@ -6,9 +6,14 @@ using namespace Eigen;
 TheBlock::TheBlock(int m, const std::vector<int>& qNumList, const MatrixX_t& hS,
                    const std::vector<MatrixX_t>& off0RhoBasisH2,
                    const std::vector<MatrixX_t>& off1RhoBasisH2,
-                   const std::vector<MatrixX_t>& off2RhoBasisH2, int l)
+                   const std::vector<MatrixX_t>& off2RhoBasisH2,
+                   const std::vector<MatrixX_t>& off3RhoBasisH2,
+                   const std::vector<MatrixX_t>& off4RhoBasisH2,
+                   const std::vector<MatrixX_t>& off5RhoBasisH2, int l)
     : m(m), qNumList(qNumList), hS(hS), off0RhoBasisH2(off0RhoBasisH2),
-      off1RhoBasisH2(off1RhoBasisH2), off2RhoBasisH2(off2RhoBasisH2), l(l) {};
+      off1RhoBasisH2(off1RhoBasisH2), off2RhoBasisH2(off2RhoBasisH2),
+      off3RhoBasisH2(off3RhoBasisH2), off4RhoBasisH2(off4RhoBasisH2), 
+      off5RhoBasisH2(off5RhoBasisH2), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& ham)
     : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
@@ -34,10 +39,16 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                                   off2RhoBasisH2);
     std::vector<MatrixX_t> tempOff0RhoBasisH2,
                            tempOff1RhoBasisH2,
-                           tempOff2RhoBasisH2;
+                           tempOff2RhoBasisH2,
+                           tempOff3RhoBasisH2,
+                           tempOff4RhoBasisH2,
+                           tempOff5RhoBasisH2;
     tempOff0RhoBasisH2.reserve(indepCouplingOperators);
     tempOff1RhoBasisH2.reserve(indepCouplingOperators);
     tempOff2RhoBasisH2.reserve(indepCouplingOperators);
+    tempOff3RhoBasisH2.reserve(indepCouplingOperators);
+    tempOff4RhoBasisH2.reserve(indepCouplingOperators);
+    tempOff5RhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
     if(data.exactDiag)
       // if near edge of system, no truncation necessary so skip DMRG algorithm
@@ -46,11 +57,19 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         {
             tempOff0RhoBasisH2.push_back(kp(Id(m), data.ham.h2[i]));
             tempOff1RhoBasisH2.push_back(kp(off0RhoBasisH2[i], Id_d));
-            if(l != 0)
+            if(l > 0)
                 tempOff2RhoBasisH2.push_back(kp(off1RhoBasisH2[i], Id_d));
+            if(l > 1)
+                tempOff3RhoBasisH2.push_back(kp(off2RhoBasisH2[i], Id_d));
+            if(l > 2)
+                tempOff4RhoBasisH2.push_back(kp(off3RhoBasisH2[i], Id_d));
+            if(l > 3)
+                tempOff5RhoBasisH2.push_back(kp(off4RhoBasisH2[i], Id_d));
         };
         return TheBlock(md, hSprimeQNumList, hSprime, tempOff0RhoBasisH2,
-                        tempOff1RhoBasisH2, tempOff2RhoBasisH2, l + 1);
+                        tempOff1RhoBasisH2, tempOff2RhoBasisH2,
+                        tempOff3RhoBasisH2, tempOff4RhoBasisH2,
+                        tempOff5RhoBasisH2, l + 1);
     };
     int compSiteType = data.compBlock -> l % nSiteTypes,
         compm = data.compBlock -> m,
@@ -104,7 +123,14 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     {
         tempOff0RhoBasisH2.push_back(changeBasis(kp(Id(m), data.ham.h2[i])));
         tempOff1RhoBasisH2.push_back(changeBasis(kp(off0RhoBasisH2[i], Id_d)));
-        tempOff2RhoBasisH2.push_back(changeBasis(kp(off1RhoBasisH2[i], Id_d)));
+        if(l > 0)
+            tempOff2RhoBasisH2.push_back(changeBasis(kp(off1RhoBasisH2[i], Id_d)));
+        if(l > 1)
+            tempOff3RhoBasisH2.push_back(changeBasis(kp(off2RhoBasisH2[i], Id_d)));
+        if(l > 2)
+            tempOff4RhoBasisH2.push_back(changeBasis(kp(off3RhoBasisH2[i], Id_d)));
+        if(l > 3)
+            tempOff5RhoBasisH2.push_back(changeBasis(kp(off4RhoBasisH2[i], Id_d)));
     };
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
@@ -127,6 +153,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     };
     return TheBlock(data.mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
                     tempOff0RhoBasisH2, tempOff1RhoBasisH2, tempOff2RhoBasisH2,
+                    tempOff3RhoBasisH2, tempOff4RhoBasisH2, tempOff5RhoBasisH2,
                     l + 1);       // save expanded-block operators in new basis
 };
 

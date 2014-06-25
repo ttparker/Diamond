@@ -33,6 +33,12 @@ class TheBlock
                      = std::vector<MatrixX_t>(),
                  const std::vector<MatrixX_t>& off2RhoBasisH2
                      = std::vector<MatrixX_t>(),
+                 const std::vector<MatrixX_t>& off3RhoBasisH2 
+                     = std::vector<MatrixX_t>(),
+                 const std::vector<MatrixX_t>& off4RhoBasisH2
+                     = std::vector<MatrixX_t>(),
+                 const std::vector<MatrixX_t>& off5RhoBasisH2
+                     = std::vector<MatrixX_t>(),
                  int l = 0);
         TheBlock(const Hamiltonian& ham);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);
@@ -51,6 +57,8 @@ class TheBlock
         std::vector<MatrixX_t> off0RhoBasisH2,
                                off1RhoBasisH2,
                                off2RhoBasisH2,
+                               off3RhoBasisH2,
+                               off4RhoBasisH2,
                                off5RhoBasisH2;
             // density-matrix-basis coupling operators - "off" means the offset
             // between this block, in which the operator is represented, and
