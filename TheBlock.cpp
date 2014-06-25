@@ -26,7 +26,8 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                                          off0RhoBasisH2);
                                                        // expanded system block
     if(l != 0)
-        hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType, off1RhoBasisH2);
+        hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
+                                                  off1RhoBasisH2);
     std::vector<MatrixX_t> tempOff0RhoBasisH2,
                            tempOff1RhoBasisH2;
     tempOff0RhoBasisH2.reserve(indepCouplingOperators);
@@ -147,5 +148,5 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
 
 MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
 {
-	return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
 };

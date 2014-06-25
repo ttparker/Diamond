@@ -44,11 +44,11 @@ MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int jType, int siteType,
 {
     MatrixX_t plusMinus = kp(rhoBasisSigmaplus, sigmaminus);
     return BASJ(jType - 1, siteType) *
-        (kp(rhoBasisSigmaz, sigmaz) + 2 * (plusMinus + plusMinus.adjoint()));
+           (kp(rhoBasisSigmaz, sigmaz) + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
 MatrixX_t Hamiltonian::lBlockrSiteJoin(int siteType, const std::vector<MatrixX_t>&
-                                      off0RhoBasisH2, int mlE) const
+                                       off0RhoBasisH2, int mlE) const
 {
     MatrixX_t plusMinus = kp(kp(off0RhoBasisSigmaplus, Id(d * mlE)), sigmaminus);
     return LBRSJ[siteType] * (kp(kp(off0RhoBasisSigmaz, Id(d * mlE)), sigmaz)
