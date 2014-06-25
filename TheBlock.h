@@ -31,6 +31,8 @@ class TheBlock
                      = std::vector<MatrixX_t>(),
                  const std::vector<MatrixX_t>& off1RhoBasisH2
                      = std::vector<MatrixX_t>(),
+                 const std::vector<MatrixX_t>& off2RhoBasisH2
+                     = std::vector<MatrixX_t>(),
                  int l = 0);
         TheBlock(const Hamiltonian& ham);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);

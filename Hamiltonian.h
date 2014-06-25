@@ -34,7 +34,8 @@ class Hamiltonian
         MatrixX_t blockAdjacentSiteJoin(int jType, int siteType,
                                         const std::vector<MatrixX_t>& rhoBasisH2)
                                         const,
-                                         // j gives the j-1th coupling constant
+                            // jType corresponds to the straightened-out chain,
+                            // not the real-space coupling constants
                   lBlockrSiteJoin(int siteType,
                                   const std::vector<MatrixX_t>& off0RhoBasisH2,
                                   int mlE) const,

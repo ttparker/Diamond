@@ -1,6 +1,6 @@
 #include "Hamiltonian.h"
 
-#define j1 couplingConstants[0]
+#define jprime couplingConstants[0]
 #define sigmaplus h2[0]
 #define sigmaz h2[1]
 #define sigmaminus h2[2]
@@ -27,11 +27,11 @@ Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
 void Hamiltonian::setParams(const std::vector<double>& couplingConstants,
                             int targetQNumIn, int lSysIn)
 {
-    BASJ << j1, 0., j1,
-            0., j1, j1;
-    LBRSJ = {j1, j1, 0.};
-    LSRBJ = {j1, 0., j1};
-    SSJ = {0., j1, j1};
+    BASJ << jprime, 0.,     jprime,
+            0.,     jprime, jprime;
+    LBRSJ = {jprime, jprime, 0.};
+    LSRBJ = {jprime, 0., jprime};
+    SSJ = {0., jprime, jprime};
     targetQNum = targetQNumIn;
     lSys = lSysIn;
 };
@@ -42,7 +42,7 @@ MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int jType, int siteType,
 {
     MatrixX_t plusMinus = kp(rhoBasisSigmaplus, sigmaminus);
     return BASJ(jType - 1, siteType) *
-        (kp(rhoBasisSigmaz, sigmaz) + 2 * (plusMinus + plusMinus.adjoint()));
+           (kp(rhoBasisSigmaz, sigmaz) + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
 MatrixX_t Hamiltonian::lBlockrSiteJoin(int siteType, const std::vector<MatrixX_t>&
