@@ -39,11 +39,11 @@ class Hamiltonian
                             // not the real-space coupling constants
                   lBlockrSiteJoin(int jType, int siteType,
                                   const std::vector<MatrixX_t>& rhoBasisH2,
-                                  int mlE) const,
+                                  int compm) const,
                   lSiterBlockJoin(int jType, int siteType, int ml,
                                   const std::vector<MatrixX_t>& compRhoBasisH2)
                                   const,
-                  siteSiteJoin(int siteType, int ml, int mlE) const,
+                  siteSiteJoin(int siteType, int ml, int compm) const,
                                            // joins the two free sites together
                   blockBlockJoin(int siteType, int l, int comp_l,
                                  const std::vector<MatrixX_t>& off0RhoBasisH2,

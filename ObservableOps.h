@@ -3,7 +3,7 @@ obsList[0] << 0., 1.,
               1., 0.;
 /*
 obsList[1] << std::complex<double>(0., 0.), std::complex<double>(0., -1.),
-              std::complex<double>(0., 1.), std::complex<double>(0., 0.);
+              std::complex<double>(0., 1.),  std::complex<double>(0., 0.);
 */
-obsList[1] << 1., 0.,
+obsList[1] << 1.,  0.,
               0., -1.;

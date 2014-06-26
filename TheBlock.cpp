@@ -31,13 +31,13 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                         + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
                                                          off0RhoBasisH2);
                                                        // expanded system block
-    if(l > 0)
+    if(l >= 1)
         hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
                                                   off1RhoBasisH2);
-    if(l > 1)
+    if(l >= 2)
         hSprime += data.ham.blockAdjacentSiteJoin(3, thisSiteType,
                                                   off2RhoBasisH2);
-    if(l > 4)
+    if(l >= 5)
         hSprime += data.ham.blockAdjacentSiteJoin(6, thisSiteType,
                                                   off5RhoBasisH2);
     std::vector<MatrixX_t> tempOff0RhoBasisH2,
@@ -60,13 +60,13 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         {
             tempOff0RhoBasisH2.push_back(kp(Id(m), data.ham.h2[i]));
             tempOff1RhoBasisH2.push_back(kp(off0RhoBasisH2[i], Id_d));
-            if(l > 0)
+            if(l >= 1)
                 tempOff2RhoBasisH2.push_back(kp(off1RhoBasisH2[i], Id_d));
-            if(l > 1)
+            if(l >= 2)
                 tempOff3RhoBasisH2.push_back(kp(off2RhoBasisH2[i], Id_d));
-            if(l > 2)
+            if(l >= 3)
                 tempOff4RhoBasisH2.push_back(kp(off3RhoBasisH2[i], Id_d));
-            if(l > 3)
+            if(l >= 4)
                 tempOff5RhoBasisH2.push_back(kp(off4RhoBasisH2[i], Id_d));
         };
         return TheBlock(md, hSprimeQNumList, hSprime, tempOff0RhoBasisH2,
@@ -81,12 +81,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                               HamSolver(MatrixX_t(kp(hSprime, Id(md))
                                                   + data.ham.lBlockrSiteJoin(2, thisSiteType, off0RhoBasisH2, m)
                                                   + data.ham.lBlockrSiteJoin(3, thisSiteType, off1RhoBasisH2, m)
-                                                  + (l > 3 ? data.ham.lBlockrSiteJoin(6, thisSiteType, off4RhoBasisH2, m) : MatrixX_t::Zero(md * md, md * md))
+                                                  + (l >= 4 ? data.ham.lBlockrSiteJoin(6, thisSiteType, off4RhoBasisH2, m) : MatrixX_t::Zero(md * md, md * md))
                                                   + data.ham.blockBlockJoin(thisSiteType, l, l, off0RhoBasisH2, off1RhoBasisH2, off2RhoBasisH2, off3RhoBasisH2, off0RhoBasisH2, off1RhoBasisH2, off2RhoBasisH2, off3RhoBasisH2)
                                                   + data.ham.siteSiteJoin(thisSiteType, m, m)
                                                   + data.ham.lSiterBlockJoin(2, thisSiteType, m, off0RhoBasisH2)
                                                   + data.ham.lSiterBlockJoin(3, thisSiteType, m, off1RhoBasisH2)
-                                                  + (l > 3 ? data.ham.lSiterBlockJoin(6, thisSiteType, m, off4RhoBasisH2) : MatrixX_t::Zero(md * md, md * md))
+                                                  + (l >= 4 ? data.ham.lSiterBlockJoin(6, thisSiteType, m, off4RhoBasisH2) : MatrixX_t::Zero(md * md, md * md))
                                                   + kp(Id(md), hSprime)),
                                         vectorProductSum(hSprimeQNumList,
                                                          hSprimeQNumList),
@@ -96,7 +96,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                               HamSolver(MatrixX_t(kp(hSprime, Id(compmd))
                                                   + data.ham.lBlockrSiteJoin(2, thisSiteType, off0RhoBasisH2, compm)
                                                   + data.ham.lBlockrSiteJoin(3, thisSiteType, off1RhoBasisH2, compm)
-                                                  + (l > 3 ? data.ham.lBlockrSiteJoin(6, thisSiteType, off4RhoBasisH2, compm) : MatrixX_t::Zero(md * compmd, md * compmd))
+                                                  + (l >= 4 ? data.ham.lBlockrSiteJoin(6, thisSiteType, off4RhoBasisH2, compm) : MatrixX_t::Zero(md * compmd, md * compmd))
                                                   + data.ham.blockBlockJoin(thisSiteType, l, data.ham.lSys - l - 4, off0RhoBasisH2, off1RhoBasisH2, off2RhoBasisH2, off3RhoBasisH2, data.compBlock -> off0RhoBasisH2, data.compBlock -> off1RhoBasisH2, data.compBlock -> off2RhoBasisH2, data.compBlock -> off3RhoBasisH2)
                                                   + data.ham.siteSiteJoin(thisSiteType, m, compm)
                                                   + data.ham.lSiterBlockJoin(2, thisSiteType, m, data.compBlock
@@ -131,13 +131,13 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     {
         tempOff0RhoBasisH2.push_back(changeBasis(kp(Id(m), data.ham.h2[i])));
         tempOff1RhoBasisH2.push_back(changeBasis(kp(off0RhoBasisH2[i], Id_d)));
-        if(l > 0)
+        if(l >= 1)
             tempOff2RhoBasisH2.push_back(changeBasis(kp(off1RhoBasisH2[i], Id_d)));
-        if(l > 1)
+        if(l >= 2)
             tempOff3RhoBasisH2.push_back(changeBasis(kp(off2RhoBasisH2[i], Id_d)));
-        if(l > 2)
+        if(l >= 3)
             tempOff4RhoBasisH2.push_back(changeBasis(kp(off3RhoBasisH2[i], Id_d)));
-        if(l > 3)
+        if(l >= 4)
             tempOff5RhoBasisH2.push_back(changeBasis(kp(off4RhoBasisH2[i], Id_d)));
     };
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
@@ -179,7 +179,7 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
         compm = data.compBlock -> m;
     MatrixX_t LBRS6,
               LSRB6;
-    if(l > 3)
+    if(l >= 4)
         LBRS6 = data.ham.lBlockrSiteJoin(6, thisSiteType, off4RhoBasisH2, compm);
     else
         LBRS6 = MatrixX_t::Zero(m * d * compm * d, m * d * compm * d);
@@ -194,7 +194,7 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                                                          off1RhoBasisH2)
                                         + data.ham.blockAdjacentSiteJoin(3, thisSiteType,
                                                                          off2RhoBasisH2)
-                                        + (l > 4 ? data.ham.blockAdjacentSiteJoin(6, thisSiteType,
+                                        + (l >= 5 ? data.ham.blockAdjacentSiteJoin(6, thisSiteType,
                                                                                   off5RhoBasisH2)
                                                  : MatrixX_t::Zero(m * d, m * d)),
                                         Id(compm * d))
