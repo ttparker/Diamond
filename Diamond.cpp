@@ -2,17 +2,14 @@
 
 #define jprime couplingConstants[0]
 #define j1 couplingConstants[1]
+#define j2 couplingConstants[2]
 #define sigmaplus h2[0]
 #define sigmaz h2[1]
 #define sigmaminus h2[2]
 #define rhoBasisSigmaplus rhoBasisH2[0]
 #define rhoBasisSigmaz rhoBasisH2[1]
-#define off0RhoBasisSigmaplus off0RhoBasisH2[0]
-#define off0RhoBasisSigmaz off0RhoBasisH2[1]
-#define compOff0RhoBasisSigmaplus compOff0RhoBasisH2[0]
-#define compOff0RhoBasisSigmaz compOff0RhoBasisH2[1]
-#define off1RhoBasisSigmaplus off1RhoBasisH2[0]
-#define off1RhoBasisSigmaz off1RhoBasisH2[1]
+#define compRhoBasisSigmaplus compRhoBasisH2[0]
+#define compRhoBasisSigmaz compRhoBasisH2[1]
 
 using namespace Eigen;
 
@@ -27,18 +24,27 @@ Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
               0., -1.;                                 // define Pauli matrices
 };
 
-void Hamiltonian::setParams(const std::vector<double>& couplingConstants,
+void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
                             int targetQNumIn, int lSysIn)
 {
+    couplingConstants = couplingConstantsIn;
     BASJ << jprime, 0.,     jprime,
             0.,     jprime, jprime,
-            j1,     j1,     0.;
+            j1,     j1,     0.,
+            0.,     0.,     0.,
+            0.,     0.,     0.,
+            j2,     j2,     0.;
     LBRSJ << jprime, jprime, 0.,
-             j1,     0.,     j1;
+             j1,     0.,     j1,
+             0.,     0.,     0.,
+             0.,     0.,     0.,
+             j2,     0.,     j2;
     LSRBJ << jprime, 0., jprime,
-             j1,     j1, 0.;
+             j1,     j1, 0.,
+             0.,     0., 0.,
+             0.,     0., 0.,
+             j2,     j2, 0.;
     SSJ = {0., jprime, jprime};
-    BBJ = {0., j1, j1};
     targetQNum = targetQNumIn;
     lSys = lSysIn;
 };
@@ -64,11 +70,11 @@ MatrixX_t Hamiltonian::lBlockrSiteJoin(int jType, int siteType,
 
 MatrixX_t Hamiltonian::lSiterBlockJoin(int jType, int siteType, int ml,
                                        const std::vector<MatrixX_t>&
-                                       compOff0RhoBasisH2) const
+                                       compRhoBasisH2) const
 {
-    MatrixX_t plusMinus = kp(sigmaplus, compOff0RhoBasisSigmaplus.adjoint());
+    MatrixX_t plusMinus = kp(sigmaplus, compRhoBasisSigmaplus.adjoint());
     return LSRBJ(jType - 2, siteType)
-           * kp(kp(Id(ml), kp(sigmaz, compOff0RhoBasisSigmaz)
+           * kp(kp(Id(ml), kp(sigmaz, compRhoBasisSigmaz)
                            + 2 * (plusMinus + plusMinus.adjoint())),
                 Id_d);
 };
@@ -80,15 +86,77 @@ MatrixX_t Hamiltonian::siteSiteJoin(int siteType, int ml, int mlE) const
                                       + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixX_t Hamiltonian::blockBlockJoin(int siteType,
+MatrixX_t Hamiltonian::blockBlockJoin(int siteType, int l, int comp_l,
                                       const std::vector<MatrixX_t>&
                                           off0RhoBasisH2,
                                       const std::vector<MatrixX_t>&
-                                          compOff0RhoBasisH2) const
+                                          off1RhoBasisH2,
+                                      const std::vector<MatrixX_t>&
+                                          off2RhoBasisH2,
+                                      const std::vector<MatrixX_t>&
+                                          off3RhoBasisH2,
+                                      const std::vector<MatrixX_t>&
+                                          compOff0RhoBasisH2,
+                                      const std::vector<MatrixX_t>&
+                                          compOff1RhoBasisH2,
+                                      const std::vector<MatrixX_t>&
+                                          compOff2RhoBasisH2,
+                                      const std::vector<MatrixX_t>&
+                                          compOff3RhoBasisH2) const
 {
-    MatrixX_t plusMinus = kp(kp(off0RhoBasisSigmaplus, Id_d),
-                             kp(compOff0RhoBasisSigmaplus.adjoint(), Id_d));
-    return BBJ[siteType] * (kp(kp(off0RhoBasisSigmaz, Id_d),
-                               kp(compOff0RhoBasisSigmaz, Id_d))
-                            + 2 * (plusMinus + plusMinus.adjoint()));
+    MatrixX_t bothBlocks;
+    switch(siteType)
+    {
+        case 0:
+        {
+            int m = off0RhoBasisH2[1].rows(),
+                compm = compOff0RhoBasisH2[1].rows();
+            bothBlocks = MatrixX_t::Zero(m * d * compm * d, m * d * compm * d);
+            if(l >= 2 && comp_l >= 1)
+                bothBlocks += j2 * generalBlockBlockJoin(off2RhoBasisH2,
+                                                         compOff1RhoBasisH2);
+            if(l >= 1 && comp_l >= 2)
+                bothBlocks += j2 * generalBlockBlockJoin(off1RhoBasisH2,
+                                                         compOff2RhoBasisH2);
+            break;
+        }
+        case 1:
+            bothBlocks = j1 * generalBlockBlockJoin(off0RhoBasisH2,
+                                                    compOff0RhoBasisH2);
+            if(l >= 3)
+                bothBlocks += j2 * generalBlockBlockJoin(off3RhoBasisH2,
+                                                         compOff0RhoBasisH2);
+            if(l >= 2 && comp_l >= 1)
+                bothBlocks += j2 * generalBlockBlockJoin(off2RhoBasisH2,
+                                                         compOff1RhoBasisH2);
+            if(comp_l >= 3)
+                bothBlocks += j2 * generalBlockBlockJoin(off0RhoBasisH2,
+                                                         compOff3RhoBasisH2);
+            break;
+        case 2:
+            bothBlocks = j1 * generalBlockBlockJoin(off0RhoBasisH2,
+                                                    compOff0RhoBasisH2);
+            if(l >= 3)
+                bothBlocks += j2 * generalBlockBlockJoin(off3RhoBasisH2,
+                                                         compOff0RhoBasisH2);
+            if(l >= 1 && comp_l >= 2)
+                bothBlocks += j2 * generalBlockBlockJoin(off1RhoBasisH2,
+                                                         compOff2RhoBasisH2);
+            if(comp_l >= 3)
+                bothBlocks += j2 * generalBlockBlockJoin(off0RhoBasisH2,
+                                                         compOff3RhoBasisH2);
+            break;
+    };
+    return bothBlocks;
+};
+
+MatrixX_t Hamiltonian::generalBlockBlockJoin(const std::vector<MatrixX_t>&
+                                                 rhoBasisH2,
+                                             const std::vector<MatrixX_t>&
+                                                 compRhoBasisH2) const
+{
+    MatrixX_t plusMinus = kp(kp(rhoBasisSigmaplus, Id_d),
+                             kp(compRhoBasisSigmaplus.adjoint(), Id_d));
+    return kp(kp(rhoBasisSigmaz, Id_d), kp(compRhoBasisSigmaz, Id_d))
+           + 2 * (plusMinus + plusMinus.adjoint());
 };
