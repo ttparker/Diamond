@@ -148,14 +148,14 @@ int main()
                               rightBlocks(lSys - 2 - skips);
              // initialize system - the last block is only used for odd-size ED
         TheBlock* rightBlocksStart = rightBlocks.data();
-        leftBlocks[0] = rightBlocks[0] = TheBlock(data.ham);
+        leftBlocks.front() = rightBlocks.front() = TheBlock(data.ham);
                                                // initialize the one-site block
         std::cout << "Performing iDMRG..." << std::endl;
             // note: this iDMRG code assumes parity symmetry of the Hamiltonian
         data.exactDiag = true;
         data.infiniteStage = true;
-        data.lancTolerance = groundStateErrorTolerances[0]
-                             * groundStateErrorTolerances[0] / 2;
+        data.lancTolerance = groundStateErrorTolerances.front()
+                             * groundStateErrorTolerances.front() / 2;
         rmMatrixX_t psiGround;                    // seed for Lanczos algorithm
         for(int site = 0; site < skips; site++)                   // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1]
