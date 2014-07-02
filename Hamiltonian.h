@@ -33,36 +33,29 @@ class Hamiltonian
                                                // site-basis coupling operators
         
         MatrixX_t blockAdjacentSiteJoin(int jType, int siteType,
-                                        const std::vector<MatrixX_t>& rhoBasisH2)
+                                        const std::vector<MatrixX_t>&
+                                            offIRhoBasisH2)
                                         const,
                             // jType corresponds to the straightened-out chain,
                             // not the real-space coupling constants
                   lBlockrSiteJoin(int jType, int siteType,
-                                  const std::vector<MatrixX_t>& rhoBasisH2,
+                                  const std::vector<MatrixX_t>& offIRhoBasisH2,
                                   int compm) const,
                   lSiterBlockJoin(int jType, int siteType, int ml,
-                                  const std::vector<MatrixX_t>& compRhoBasisH2)
+                                  const std::vector<MatrixX_t>& compOffIRhoBasisH2)
                                   const,
                   siteSiteJoin(int siteType, int ml, int compm) const,
                                            // joins the two free sites together
                   blockBlockJoin(int siteType, int l, int comp_l,
-                                 const std::vector<MatrixX_t>& off0RhoBasisH2,
-                                 const std::vector<MatrixX_t>& off1RhoBasisH2,
-                                 const std::vector<MatrixX_t>& off2RhoBasisH2,
-                                 const std::vector<MatrixX_t>& off3RhoBasisH2,
-                                 const std::vector<MatrixX_t>&
-                                     compOff0RhoBasisH2,
-                                 const std::vector<MatrixX_t>&
-                                     compOff1RhoBasisH2,
-                                 const std::vector<MatrixX_t>&
-                                     compOff2RhoBasisH2,
-                                 const std::vector<MatrixX_t>&
-                                     compOff3RhoBasisH2) const,
+                                 const std::vector<std::vector<MatrixX_t>>&
+                                     rhoBasisH2,
+                                 const std::vector<std::vector<MatrixX_t>>&
+                                     compRhoBasisH2) const,
                                                // joins the two blocks together
                   generalBlockBlockJoin(const std::vector<MatrixX_t>&
-                                            rhoBasisH2,
+                                            offIRhoBasisH2,
                                         const std::vector<MatrixX_t>&
-                                            compRhoBasisH2) const;
+                                            compOffIRhoBasisH2) const;
     
     friend class TheBlock;
 };

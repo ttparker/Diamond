@@ -27,18 +27,8 @@ class TheBlock
         TheBlock(int m = 0,
                  const std::vector<int>& qNumList = std::vector<int>(),
                  const MatrixX_t& hS = MatrixX_t(),
-                 const std::vector<MatrixX_t>& off0RhoBasisH2 
-                     = std::vector<MatrixX_t>(),
-                 const std::vector<MatrixX_t>& off1RhoBasisH2
-                     = std::vector<MatrixX_t>(),
-                 const std::vector<MatrixX_t>& off2RhoBasisH2
-                     = std::vector<MatrixX_t>(),
-                 const std::vector<MatrixX_t>& off3RhoBasisH2 
-                     = std::vector<MatrixX_t>(),
-                 const std::vector<MatrixX_t>& off4RhoBasisH2
-                     = std::vector<MatrixX_t>(),
-                 const std::vector<MatrixX_t>& off5RhoBasisH2
-                     = std::vector<MatrixX_t>(),
+                 const std::vector<std::vector<MatrixX_t>>& rhoBasisH2 
+                     = std::vector<std::vector<MatrixX_t>>(),
                  int l = 0);
         TheBlock(const Hamiltonian& ham);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);
@@ -54,15 +44,11 @@ class TheBlock
         std::vector<int> qNumList;
                 // tracks the conserved quantum number of each row/column of hS
         MatrixX_t hS;                                      // block Hamiltonian
-        std::vector<MatrixX_t> off0RhoBasisH2,
-                               off1RhoBasisH2,
-                               off2RhoBasisH2,
-                               off3RhoBasisH2,
-                               off4RhoBasisH2,
-                               off5RhoBasisH2;
-            // density-matrix-basis coupling operators - "off" means the offset
-            // between this block, in which the operator is represented, and
-            // the site on which it acts
+        std::vector<std::vector<MatrixX_t>> rhoBasisH2;
+            // density-matrix-basis coupling operators - the first index gives
+            // the offset between this block, in which the operator is
+            // represented, and the site on which it acts.  The second index
+            // gives the equivalent one-site operator
         int l;            // site at the end of the block (i.e. block size - 1)
         
         MatrixX_t changeBasis(const MatrixX_t& mat) const;
