@@ -10,7 +10,7 @@ TheBlock::TheBlock(int m, const std::vector<int>& qNumList, const MatrixX_t& hS,
 TheBlock::TheBlock(const Hamiltonian& ham)
     : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
 {
-    rhoBasisH2.resize(6);
+    rhoBasisH2.resize(farthestNeighborCoupling);
     rhoBasisH2.front().assign(ham.h2.begin(),
                               ham.h2.begin() + indepCouplingOperators);
 };
@@ -20,20 +20,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     std::vector<int> hSprimeQNumList      // add in quantum numbers of new site
         = vectorProductSum(qNumList, data.ham.oneSiteQNums);
     int thisSiteType = l % nSiteTypes;
-    MatrixX_t hSprime = kp(hS, Id_d)
-                        + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
-                                                         rhoBasisH2[0]);
-                                                       // expanded system block
-    if(l >= 1)
-        hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
-                                                  rhoBasisH2[1]);
-    if(l >= 2)
-        hSprime += data.ham.blockAdjacentSiteJoin(3, thisSiteType,
-                                                  rhoBasisH2[2]);
-    if(l >= 5)
-        hSprime += data.ham.blockAdjacentSiteJoin(6, thisSiteType,
-                                                  rhoBasisH2[5]);
-    std::vector<std::vector<MatrixX_t>> tempRhoBasisH2(6);
+    MatrixX_t hSprime = kp(hS, Id_d);
+    for(int i = 1; i <= farthestNeighborCoupling; i++)
+        if(couplings[i] && l >= i - 1)
+            hSprime += data.ham.blockAdjacentSiteJoin(i, thisSiteType,
+                                                      rhoBasisH2[i - 1]);
+    std::vector<std::vector<MatrixX_t>> tempRhoBasisH2(farthestNeighborCoupling);
     for(auto tempOffIRhoBasisH2 : tempRhoBasisH2)
         tempOffIRhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
@@ -43,7 +35,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         for(int j = 0; j < indepCouplingOperators; j++)
         {
             tempRhoBasisH2.front().push_back(kp(Id(m), data.ham.h2[j]));
-            for(int i = 0; i < 5; i++)
+            for(int i = 0, end = farthestNeighborCoupling - 1; i < end; i++)
                 if(l >= i)
                     tempRhoBasisH2[i + 1].push_back(kp(rhoBasisH2[i][j], Id_d));
         };
@@ -105,7 +97,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     for(int j = 0; j < indepCouplingOperators; j++)
     {
         tempRhoBasisH2.front().push_back(changeBasis(kp(Id(m), data.ham.h2[j])));
-        for(int i = 0; i < 5; i++)
+        for(int i = 0, end = farthestNeighborCoupling - 1; i < end; i++)
             if(l >= i)
                 tempRhoBasisH2[i + 1].push_back(changeBasis(kp(rhoBasisH2[i][j],
                                                                Id_d)));
