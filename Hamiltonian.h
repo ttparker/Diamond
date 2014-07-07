@@ -25,7 +25,9 @@ class Hamiltonian
         Eigen::Matrix<double, 6, nSiteTypes> BASJ;
         // these are the arrays of coupling constants for each type of site in
         // the lattice basis - the acronyms stand for the coupling operators
-        // listed below
+        // listed below. The row gives the length of the coupling on the 
+        // stretched-out chain, and the column gives the type of site within
+        // the lattice basis.
         Eigen::Matrix<double, 5, nSiteTypes> LBRSJ,
                                              LSRBJ;
         std::vector<double> SSJ;
