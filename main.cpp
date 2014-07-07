@@ -153,15 +153,15 @@ int main()
         std::cout << "Performing iDMRG..." << std::endl;
             // note: this iDMRG code assumes parity symmetry of the Hamiltonian
         data.exactDiag = true;
+        data.compBlock = rightBlocksStart;
         data.infiniteStage = true;
         data.lancTolerance = groundStateErrorTolerances.front()
                              * groundStateErrorTolerances.front() / 2;
         rmMatrixX_t psiGround;                    // seed for Lanczos algorithm
-        for(int site = 0; site < skips; site++)                   // initial ED
+        for(int site = 0; site < skips; site++, data.compBlock++) // initial ED
             rightBlocks[site + 1] = leftBlocks[site + 1]
                                   = leftBlocks[site].nextBlock(data, psiGround);
         data.exactDiag = completeED;
-        data.compBlock = rightBlocksStart + skips;
         for(int site = skips, end = lEFinal - 1; site < end; site++,
                                                              data.compBlock++)
                                                                        // iDMRG

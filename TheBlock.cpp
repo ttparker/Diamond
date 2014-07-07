@@ -18,8 +18,6 @@ TheBlock::TheBlock(const Hamiltonian& ham)
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 {
-    std::vector<int> hSprimeQNumList      // add in quantum numbers of new site
-        = vectorProductSum(qNumList, data.ham.oneSiteQNums);
     int thisSiteType = l % nSiteTypes;
     MatrixX_t hSprime = kp(hS, Id_d)
                         + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
@@ -28,6 +26,9 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     if(l != 0)
         hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
                                                   off1RhoBasisH2);
+    std::vector<int> hSprimeQNumList = vectorProductSum(qNumList,
+                                                        data.ham.oneSiteQNums);
+                                          // add in quantum numbers of new site
     std::vector<MatrixX_t> tempOff0RhoBasisH2,
                            tempOff1RhoBasisH2;
     tempOff0RhoBasisH2.reserve(indepCouplingOperators);
@@ -47,34 +48,39 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     int compSiteType = data.compBlock -> l % nSiteTypes,
         compm = data.compBlock -> m,
         compmd = compm * d;
-    HamSolver hSuperSolver = (data.infiniteStage ? // find superblock eigenstates
-                              HamSolver(MatrixX_t(kp(hSprime, Id(md))
-                                                  + data.ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, m)
-                                                  + data.ham.siteSiteJoin(thisSiteType, m, m)
-                                                  + data.ham.lSiterBlockJoin(thisSiteType, m, off0RhoBasisH2)
-                                                  + kp(Id(md), hSprime)),
-                                        vectorProductSum(hSprimeQNumList,
-                                                         hSprimeQNumList),
-                                        data.ham.targetQNum * (l + 2) / data.ham.lSys * 2,
-                                        psiGround, data.lancTolerance) :
+    MatrixX_t hEprime = (data.infiniteStage ?
+                         hSprime :
+                         kp(data.compBlock -> hS, Id_d)
+                         + data.ham.blockAdjacentSiteJoin(1, compSiteType,
+                                                          data.compBlock
+                                                          -> off0RhoBasisH2)
+                         + data.ham.blockAdjacentSiteJoin(2, compSiteType,
+                                                          data.compBlock
+                                                          -> off1RhoBasisH2));
+                                                  // expanded environment block
+    std::vector<int> hEprimeQNumList = (data.infiniteStage ?
+                                        hSprimeQNumList :
+                                        vectorProductSum(data.compBlock
+                                                         -> qNumList,
+                                                         data.ham.oneSiteQNums));
+    int scaledTargetQNum = (data.infiniteStage ?
+                            data.ham.targetQNum * (l + 2) / data.ham.lSys * 2 :
                                                // int automatically rounds down
-                              HamSolver(MatrixX_t(kp(hSprime, Id(compmd))
-                                                  + data.ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2, compm)
-                                                  + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                                                  + data.ham.lSiterBlockJoin(thisSiteType, m, data.compBlock
-                                                                                              -> off0RhoBasisH2)
-                                                  + kp(Id(md), data.ham.blockAdjacentSiteJoin(1, compSiteType,
-                                                                                              data.compBlock
-                                                                                              -> off0RhoBasisH2)
-                                                               + data.ham.blockAdjacentSiteJoin(2, compSiteType,
-                                                                                                data.compBlock
-                                                                                                -> off1RhoBasisH2)
-                                                               + kp(data.compBlock -> hS, Id_d))),
-                                        vectorProductSum(hSprimeQNumList,
-                                                         vectorProductSum(data.compBlock -> qNumList,
-                                                                          data.ham.oneSiteQNums)),
-                                        data.ham.targetQNum, psiGround,
-                                        data.lancTolerance));
+                            data.ham.targetQNum);
+                         // during iDMRG stage, targets correct quantum number
+                         // per unit site by scaling to fit current system size
+                         // - note: this will change if d != 2
+    HamSolver hSuperSolver(kp(hSprime, Id(compmd))
+                           + data.ham.lBlockrSiteJoin(thisSiteType,
+                                                      off0RhoBasisH2, compm)
+                           + data.ham.siteSiteJoin(thisSiteType, m, compm)
+                           + data.ham.lSiterBlockJoin(thisSiteType, m,
+                                                      data.compBlock
+                                                      -> off0RhoBasisH2)
+                           + kp(Id(md), hEprime),
+                           vectorProductSum(hSprimeQNumList, hEprimeQNumList),
+                           scaledTargetQNum, psiGround, data.lancTolerance);
+                                                 // find superblock eigenstates
     psiGround = hSuperSolver.lowestEvec;                        // ground state
     psiGround.resize(md, compmd);
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList,
@@ -113,30 +119,32 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             const rmMatrixX_t& psiGround,
                                             int skips) const
 {
-    int thisSiteType = l % nSiteTypes,
-        compSiteType = data.compBlock -> l % nSiteTypes,
+    int thisSiteType = l % nSiteTypes;
+    MatrixX_t hSprime = kp(hS, Id_d)
+                        + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
+                                                         off0RhoBasisH2);
+                                                       // expanded system block
+    if(l != 0)
+        hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
+                                                  off1RhoBasisH2);
+    int compSiteType = data.compBlock -> l % nSiteTypes,
         compm = data.compBlock -> m;
-    return FinalSuperblock(MatrixX_t(kp(kp(hS, Id_d)
-                                        + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
-                                                                         off0RhoBasisH2)
-                                        + data.ham.blockAdjacentSiteJoin(2, thisSiteType,
-                                                                         off1RhoBasisH2),
-                                        Id(compm * d))
-                                     + data.ham.lBlockrSiteJoin(thisSiteType,
-                                                                off0RhoBasisH2,
-                                                                compm)
-                                     + data.ham.siteSiteJoin(thisSiteType, m,
-                                                             compm)
-                                     + data.ham.lSiterBlockJoin(thisSiteType, m,
-                                                                data.compBlock
-                                                                -> off0RhoBasisH2)
-                                     + kp(Id(m * d), data.ham.blockAdjacentSiteJoin(1, compSiteType,
-                                                                                    data.compBlock
-                                                                                    -> off0RhoBasisH2)
-                                                     + data.ham.blockAdjacentSiteJoin(2, compSiteType,
-                                                                                      data.compBlock
-                                                                                      -> off1RhoBasisH2)
-                                                     + kp(data.compBlock -> hS, Id_d))),
+    MatrixX_t hEprime = kp(data.compBlock -> hS, Id_d)
+                        + data.ham.blockAdjacentSiteJoin(1, compSiteType,
+                                                         data.compBlock
+                                                         -> off0RhoBasisH2)
+                        + data.ham.blockAdjacentSiteJoin(2, compSiteType,
+                                                         data.compBlock
+                                                         -> off1RhoBasisH2);
+                                                  // expanded environment block
+    return FinalSuperblock(kp(hSprime, Id(compm * d))
+                           + data.ham.lBlockrSiteJoin(thisSiteType,
+                                                      off0RhoBasisH2, compm)
+                           + data.ham.siteSiteJoin(thisSiteType, m, compm)
+                           + data.ham.lSiterBlockJoin(thisSiteType, m,
+                                                      data.compBlock
+                                                      -> off0RhoBasisH2)
+                           + kp(Id(m * d), hEprime),
                            qNumList, data.compBlock -> qNumList, data,
                            psiGround, m, compm, skips);
 };
