@@ -64,6 +64,17 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                         vectorProductSum(data.compBlock
                                                          -> qNumList,
                                                          data.ham.oneSiteQNums));
+    MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd);
+    for(int i = 2; i <= farthestNeighborCoupling; i++)
+        if(couplings[i] && l >= i - 2)
+            hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
+                                                     rhoBasisH2[i - 2], compm);
+    MatrixX_t hlSiterBlock = MatrixX_t::Zero(md * compmd, md * compmd);
+    for(int i = 2; i <= farthestNeighborCoupling; i++)
+        if(couplings[i] && comp_l >= i - 2)
+            hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
+                                                     data.compBlock
+                                                     -> rhoBasisH2[i - 2]);
     int scaledTargetQNum = (data.infiniteStage ?
                             data.ham.targetQNum * (l + 2) / data.ham.lSys * 2 :
                                                // int automatically rounds down
@@ -72,30 +83,13 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                          // per unit site by scaling to fit current system size
                          // - note: this will change if d != 2
     HamSolver hSuperSolver(kp(hSprime, Id(compmd))
-                           + data.ham.lBlockrSiteJoin(2, thisSiteType,
-                                                      rhoBasisH2[0], compm)
-                           + data.ham.lBlockrSiteJoin(3, thisSiteType,
-                                                      rhoBasisH2[1], compm)
-                           + (l >= 4 ?
-                              data.ham.lBlockrSiteJoin(6, thisSiteType,
-                                                       rhoBasisH2[4], compm) :
-                              MatrixX_t::Zero(md * compmd, md * compmd))
+                           + hlBlockrSite
                            + data.ham.blockBlockJoin(thisSiteType, l, comp_l,
                                                      rhoBasisH2,
                                                      data.compBlock
                                                      -> rhoBasisH2)
                            + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                           + data.ham.lSiterBlockJoin(2, thisSiteType, m,
-                                                      data.compBlock
-                                                      -> rhoBasisH2[0])
-                           + data.ham.lSiterBlockJoin(3, thisSiteType, m,
-                                                      data.compBlock
-                                                      -> rhoBasisH2[1])
-                           + (comp_l >= 4 ?
-                              data.ham.lSiterBlockJoin(6, thisSiteType, m,
-                                                       data.compBlock
-                                                       -> rhoBasisH2[4]) :
-                              MatrixX_t::Zero(md * compmd, md * compmd))
+                           + hlSiterBlock
                            + kp(Id(md), hEprime),
                            vectorProductSum(hSprimeQNumList, hEprimeQNumList),
                            scaledTargetQNum, psiGround, data.lancTolerance);
@@ -143,7 +137,9 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
 {
     int thisSiteType = l % nSiteTypes,
         compSiteType = data.compBlock -> l % nSiteTypes,
-        compm = data.compBlock -> m;
+        md = m * d,
+        compm = data.compBlock -> m,
+        compmd = compm * d;
     MatrixX_t hSprime = kp(hS, Id_d);                  // expanded system block
     for(int i = 1; i <= farthestNeighborCoupling; i++)
         if(couplings[i] && l >= i - 1)
@@ -156,34 +152,26 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
             hEprime += data.ham.blockAdjacentSiteJoin(i, compSiteType,
                                                       data.compBlock
                                                       -> rhoBasisH2[i - 1]);
+    MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd);
+    for(int i = 2; i <= farthestNeighborCoupling; i++)
+        if(couplings[i] && l >= i - 2)
+            hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
+                                                     rhoBasisH2[i - 2], compm);
+    MatrixX_t hlSiterBlock = MatrixX_t::Zero(md * compmd, md * compmd);
+    for(int i = 2; i <= farthestNeighborCoupling; i++)
+        if(couplings[i] && data.ham.lSys - l - 2 >= i)
+            hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
+                                                     data.compBlock
+                                                     -> rhoBasisH2[i - 2]);
     return FinalSuperblock(kp(hSprime, Id(compm * d))
-                           + data.ham.lBlockrSiteJoin(2, thisSiteType,
-                                                      rhoBasisH2[0], compm)
-                           + data.ham.lBlockrSiteJoin(3, thisSiteType,
-                                                      rhoBasisH2[1], compm)
-                           + (l >= 4 ?
-                              data.ham.lBlockrSiteJoin(6, thisSiteType,
-                                                       rhoBasisH2[4], compm) :
-                              MatrixX_t::Zero(m * d * compm * d,
-                                              m * d * compm * d))
+                           + hlBlockrSite
                            + data.ham.blockBlockJoin(thisSiteType, l,
                                                      data.ham.lSys - l - 4,
                                                      rhoBasisH2,
                                                      data.compBlock
                                                      -> rhoBasisH2)
                            + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                           + data.ham.lSiterBlockJoin(2, thisSiteType, m,
-                                                      data.compBlock
-                                                      -> rhoBasisH2[0])
-                           + data.ham.lSiterBlockJoin(3, thisSiteType, m,
-                                                      data.compBlock
-                                                      -> rhoBasisH2[1])
-                           + (l < data.ham.lSys - 3 - 4 ?
-                              data.ham.lSiterBlockJoin(6, thisSiteType, m,
-                                                data.compBlock
-                                                -> rhoBasisH2[4]) :
-                              MatrixX_t::Zero(m * d * compm * d,
-                                              m * d * compm * d))
+                           + hlSiterBlock
                            + kp(Id(m * d), hEprime),
                            qNumList, data.compBlock -> qNumList, data,
                            psiGround, m, compm, skips);
