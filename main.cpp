@@ -100,8 +100,8 @@ int main()
         if(rangeOfObservables == -1)
             rangeOfObservables = lSys;
         std::vector<double> groundStateErrorTolerances(nSweeps + 1);
-        for(int i = 0; i <= nSweeps; i++)
-            filein >> groundStateErrorTolerances[i];
+        for(int sweep = 0; sweep <= nSweeps; i++)
+            filein >> groundStateErrorTolerances[sweep];
         
         fileout << "System length: " << lSys << "\nCoupling constants:";
         for(double couplingConstant : couplingConstants)
