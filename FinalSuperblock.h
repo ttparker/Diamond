@@ -3,6 +3,7 @@
 
 #include <map>
 #include "TheBlock.h"
+#include "ESolver.h"
 
 typedef std::vector<std::pair<obsMatrixD_t, int>,
                     Eigen::aligned_allocator<std::pair<obsMatrixD_t, int>>>
@@ -16,10 +17,7 @@ class FinalSuperblock
     public:
         double gsEnergy;                                 // ground-state energy
         
-        FinalSuperblock(const MatrixX_t& matFinal,
-                        const std::vector<int>& qNumList,
-                        const std::vector<int>& compQNumList,
-                        const stepData& data,
+        FinalSuperblock(const HamSolver& hSuperSolver, int lSupFinal,
                         const rmMatrixX_t& psiGroundIn, int mSFinal,
                         int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,

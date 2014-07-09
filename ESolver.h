@@ -40,12 +40,14 @@ class HamSolver
 
 class DMSolver
 {
-    public:
+    private:
         MatrixX_t highestEvecs;
         std::vector<int> highestEvecQNums;
         
         DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                  int evecsToKeep);
+    
+    friend class TheBlock;
 };
 
 #endif

@@ -1,23 +1,13 @@
 #include "FreeFunctions.h"
-#include "ESolver.h"
 
 using namespace Eigen;
 
-FinalSuperblock::FinalSuperblock(const MatrixX_t& matFinal,
-                                 const std::vector<int>& qNumList,
-                                 const std::vector<int>& compQNumList,
-                                 const stepData& data,
-                                 const rmMatrixX_t& psiGroundIn, int mSFinal,
-                                 int mEFinal, int skips)
-    : lSupFinal(data.ham.lSys), psiGround(psiGroundIn), mSFinal(mSFinal),
+FinalSuperblock::FinalSuperblock(const HamSolver& hSuperSolver,
+                                 int lSupFinal, const rmMatrixX_t& psiGroundIn,
+                                 int mSFinal, int mEFinal, int skips)
+    : lSupFinal(lSupFinal), psiGround(psiGroundIn), mSFinal(mSFinal),
       mEFinal(mEFinal), skips(skips)
 {
-    HamSolver hSuperSolver(matFinal,
-                           vectorProductSum(vectorProductSum(qNumList,
-                                                             data.ham.oneSiteQNums),
-                                            vectorProductSum(compQNumList,
-                                                             data.ham.oneSiteQNums)),
-                           data.ham.targetQNum, psiGround, data.lancTolerance);
     gsEnergy = hSuperSolver.lowestEval;
     psiGround = hSuperSolver.lowestEvec;
     if(lSupFinal % 2)
