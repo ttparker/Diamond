@@ -20,7 +20,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     int thisSiteType = l % nSiteTypes;
     MatrixX_t hSprime = kp(hS, Id_d);                  // expanded system block
     for(int i = 1; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && l >= i - 1)
+        if(l >= i - 1 && data.ham.BASJ(i - 1, thisSiteType))
             hSprime += data.ham.blockAdjacentSiteJoin(i, thisSiteType,
                                                       rhoBasisH2[i - 1]);
                                                      // add in longer couplings
@@ -54,7 +54,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     {
         hEprime = kp(data.compBlock -> hS, Id_d);
         for(int i = 1; i <= farthestNeighborCoupling; i++)
-            if(couplings[i] && comp_l >= i - 1)
+            if(comp_l >= i - 1 && data.ham.BASJ(i - 1, compSiteType))
                 hEprime += data.ham.blockAdjacentSiteJoin(i, compSiteType,
                                                           data.compBlock
                                                           -> rhoBasisH2[i - 1]);
@@ -66,12 +66,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                                          data.ham.oneSiteQNums));
     MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd);
     for(int i = 2; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && l >= i - 2)
+        if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
             hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
                                                      rhoBasisH2[i - 2], compm);
     MatrixX_t hlSiterBlock = MatrixX_t::Zero(md * compmd, md * compmd);
     for(int i = 2; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && comp_l >= i - 2)
+        if(comp_l >= i - 2 && data.ham.LSRBJ(i - 2, thisSiteType))
             hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
                                                      data.compBlock
                                                      -> rhoBasisH2[i - 2]);
@@ -142,24 +142,24 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
         compmd = compm * d;
     MatrixX_t hSprime = kp(hS, Id_d);                  // expanded system block
     for(int i = 1; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && l >= i - 1)
+        if(l >= i - 1 && data.ham.BASJ(i - 1, thisSiteType))
             hSprime += data.ham.blockAdjacentSiteJoin(i, thisSiteType,
                                                       rhoBasisH2[i - 1]);
     MatrixX_t hEprime = kp(data.compBlock -> hS, Id_d);
                                                   // expanded environment block
     for(int i = 1; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && data.ham.lSys - l - 3 >= i)
+        if(data.ham.lSys - l - 3 >= i && data.ham.BASJ(i - 1, compSiteType))
             hEprime += data.ham.blockAdjacentSiteJoin(i, compSiteType,
                                                       data.compBlock
                                                       -> rhoBasisH2[i - 1]);
     MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd);
     for(int i = 2; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && l >= i - 2)
+        if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
             hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
                                                      rhoBasisH2[i - 2], compm);
     MatrixX_t hlSiterBlock = MatrixX_t::Zero(md * compmd, md * compmd);
     for(int i = 2; i <= farthestNeighborCoupling; i++)
-        if(couplings[i] && data.ham.lSys - l - 2 >= i)
+        if(data.ham.lSys - l - 2 >= i && data.ham.LSRBJ(i - 2, thisSiteType))
             hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
                                                      data.compBlock
                                                      -> rhoBasisH2[i - 2]);
