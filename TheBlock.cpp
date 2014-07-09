@@ -75,6 +75,15 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
             hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
                                                      data.compBlock
                                                      -> rhoBasisH2[i - 2]);
+    MatrixX_t hSuper = kp(hSprime, Id(compmd))
+                          + hlBlockrSite
+                          + data.ham.blockBlockJoin(thisSiteType, l, comp_l,
+                                                    rhoBasisH2,
+                                                    data.compBlock -> rhoBasisH2)
+                          + hlSiterBlock
+                          + kp(Id(md), hEprime);                  // superblock
+    if(data.ham.SSJ[thisSiteType])
+        hSuper += data.ham.siteSiteJoin(thisSiteType, m, compm);
     int scaledTargetQNum = (data.infiniteStage ?
                             data.ham.targetQNum * (l + 2) / data.ham.lSys * 2 :
                                                // int automatically rounds down
@@ -82,15 +91,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                          // during iDMRG stage, targets correct quantum number
                          // per unit site by scaling to fit current system size
                          // - note: this will change if d != 2
-    HamSolver hSuperSolver(kp(hSprime, Id(compmd))
-                           + hlBlockrSite
-                           + data.ham.blockBlockJoin(thisSiteType, l, comp_l,
-                                                     rhoBasisH2,
-                                                     data.compBlock
-                                                     -> rhoBasisH2)
-                           + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                           + hlSiterBlock
-                           + kp(Id(md), hEprime),
+    HamSolver hSuperSolver(hSuper,
                            vectorProductSum(hSprimeQNumList, hEprimeQNumList),
                            scaledTargetQNum, psiGround, data.lancTolerance);
                                                  // find superblock eigenstates
@@ -139,7 +140,8 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
         compSiteType = data.compBlock -> l % nSiteTypes,
         md = m * d,
         compm = data.compBlock -> m,
-        compmd = compm * d;
+        compmd = compm * d,
+        comp_l = data.ham.lSys - l - 4;
     MatrixX_t hSprime = kp(hS, Id_d);                  // expanded system block
     for(int i = 1; i <= farthestNeighborCoupling; i++)
         if(l >= i - 1 && data.ham.BASJ(i - 1, thisSiteType))
@@ -163,17 +165,16 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
             hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
                                                      data.compBlock
                                                      -> rhoBasisH2[i - 2]);
-    return FinalSuperblock(kp(hSprime, Id(compm * d))
-                           + hlBlockrSite
-                           + data.ham.blockBlockJoin(thisSiteType, l,
-                                                     data.ham.lSys - l - 4,
-                                                     rhoBasisH2,
-                                                     data.compBlock
-                                                     -> rhoBasisH2)
-                           + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                           + hlSiterBlock
-                           + kp(Id(m * d), hEprime),
-                           qNumList, data.compBlock -> qNumList, data,
+    MatrixX_t hSuper = kp(hSprime, Id(compmd))
+                          + hlBlockrSite
+                          + data.ham.blockBlockJoin(thisSiteType, l, comp_l,
+                                                    rhoBasisH2,
+                                                    data.compBlock -> rhoBasisH2)
+                          + hlSiterBlock
+                          + kp(Id(md), hEprime);                  // superblock
+    if(data.ham.SSJ[thisSiteType])
+        hSuper += data.ham.siteSiteJoin(thisSiteType, m, compm);
+    return FinalSuperblock(hSuper, qNumList, data.compBlock -> qNumList, data,
                            psiGround, m, compm, skips);
 };
 
