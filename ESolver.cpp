@@ -1,6 +1,6 @@
 #include <map>
 #include <set>
-#include "TheBlock.h"
+#include "main.h"
 #include "ESolver.h"
 
 using namespace Eigen;
