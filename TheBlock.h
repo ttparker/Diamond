@@ -2,6 +2,7 @@
 #define THEBLOCK_H
 
 #include "Hamiltonian.h"
+#include "ESolver.h"
 
 class FinalSuperblock;
 class TheBlock;
@@ -50,6 +51,17 @@ class TheBlock
             // gives the equivalent one-site operator
         int l;            // site at the end of the block (i.e. block size - 1)
         
+        MatrixX_t createHprime(const TheBlock* block, const Hamiltonian& ham,
+                               int siteType, std::vector<int>& hprimeQNumList)
+                               const;
+        std::vector<std::vector<MatrixX_t>>
+            createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
+                                bool infiniteStage) const;
+        HamSolver createHSuperSolver(const stepData& data,
+                                     const MatrixX_t& hSprime,
+                                     const std::vector<int>& hSprimeQNumList,
+                                     int thisSiteType, rmMatrixX_t& psiGround)
+                                     const;
         MatrixX_t changeBasis(const MatrixX_t& mat) const;
                    // represents operators in the basis of the new system block
 };

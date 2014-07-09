@@ -3,7 +3,6 @@
 
 #include <map>
 #include "TheBlock.h"
-#include "ESolver.h"
 
 typedef std::vector<std::pair<obsMatrixD_t, int>,
                     Eigen::aligned_allocator<std::pair<obsMatrixD_t, int>>>
