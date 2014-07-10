@@ -2,14 +2,12 @@
 
 using namespace Eigen;
 
-FinalSuperblock::FinalSuperblock(const HamSolver& hSuperSolver,
-                                 int lSupFinal, const rmMatrixX_t& psiGroundIn,
+FinalSuperblock::FinalSuperblock(const HamSolver& hSuperSolver, int lSupFinal,
                                  int mSFinal, int mEFinal, int skips)
-    : lSupFinal(lSupFinal), psiGround(psiGroundIn), mSFinal(mSFinal),
-      mEFinal(mEFinal), skips(skips)
+    : gsEnergy(hSuperSolver.lowestEval), lSupFinal(lSupFinal),
+      psiGround(hSuperSolver.lowestEvec), mSFinal(mSFinal), mEFinal(mEFinal),
+      skips(skips)
 {
-    gsEnergy = hSuperSolver.lowestEval;
-    psiGround = hSuperSolver.lowestEvec;
     if(lSupFinal % 2)
     {
         lSFinal = (lSupFinal - 1)/2;

@@ -17,8 +17,7 @@ class FinalSuperblock
         double gsEnergy;                                 // ground-state energy
         
         FinalSuperblock(const HamSolver& hSuperSolver, int lSupFinal,
-                        const rmMatrixX_t& psiGroundIn, int mSFinal,
-                        int mEFinal, int skips);
+                        int mSFinal, int mEFinal, int skips);
         double expValue(const opsVec& ops, std::vector<TheBlock>& leftBlocks,
                         std::vector<TheBlock>& rightBlocks);
         // calculates exectation value of a combination of single-site operators

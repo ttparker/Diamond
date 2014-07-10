@@ -161,8 +161,8 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
     HamSolver hSuperSolver = createHSuperSolver(data, hSprime, hSprimeQNumList,
                                                 thisSiteType, psiGround);
                                            // find final superblock eigenstates
-    return FinalSuperblock(hSuperSolver, data.ham.lSys, psiGround, m,
-                           data.compBlock-> m, skips);
+    return FinalSuperblock(hSuperSolver, data.ham.lSys, m, data.compBlock-> m,
+                           skips);
 };
 
 obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const
