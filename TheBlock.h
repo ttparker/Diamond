@@ -36,8 +36,8 @@ class TheBlock
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);
                                                      // performs each DMRG step
         FinalSuperblock createHSuperFinal(const stepData& data,
-                                          const rmMatrixX_t& psiGround,
-                                          int skips) const;
+                                          rmMatrixX_t& psiGround, int skips)
+                                          const;
                     // HSuperFinal, mSFinal, qNumList, oneSiteQNums, targetQNum
         obsMatrixX_t obsChangeBasis(const obsMatrixX_t& mat) const;
                        // changes basis during calculation of observables stage
