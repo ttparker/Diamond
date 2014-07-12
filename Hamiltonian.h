@@ -33,7 +33,7 @@ class Hamiltonian
         Eigen::Matrix<double, 5, nSiteTypes> LBRSJ,
                                              LSRBJ;
         std::vector<double> SSJ;
-        vecMatD_t h2;                          // site-basis coupling operators
+        vecMatD_t siteBasisH2;                 // site-basis coupling operators
         
         MatrixX_t blockAdjacentSiteJoin(int jType, int siteType,
                                         const std::vector<MatrixX_t>&

@@ -11,8 +11,8 @@ TheBlock::TheBlock(const Hamiltonian& ham)
     : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
 {
     rhoBasisH2.resize(farthestNeighborCoupling);
-    rhoBasisH2.front().assign(ham.h2.begin(),
-                              ham.h2.begin() + indepCouplingOperators);
+    rhoBasisH2.front().assign(ham.siteBasisH2.begin(),
+                              ham.siteBasisH2.begin() + indepCouplingOperators);
 };
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
@@ -23,7 +23,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                      hSprimeQNumList); // expanded system block
     if(data.exactDiag)
         return TheBlock(m * d, hSprimeQNumList, hSprime,
-                        createNewRhoBasisH2(data.ham.h2, true), l + 1);
+                        createNewRhoBasisH2(data.ham.siteBasisH2, true), l + 1);
       // if near edge of system, no truncation necessary so skip DMRG algorithm
     HamSolver hSuperSolver = createHSuperSolver(data, hSprime, hSprimeQNumList,
                                                 thisSiteType, psiGround);
@@ -53,7 +53,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                          * data.beforeCompBlock -> primeToRhoBasis.rows(), 1);
     };
     return TheBlock(data.mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
-                    createNewRhoBasisH2(data.ham.h2, false), l + 1);
+                    createNewRhoBasisH2(data.ham.siteBasisH2, false), l + 1);
                                   // save expanded-block operators in new basis
 };
 
@@ -73,20 +73,20 @@ MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
 };
 
 std::vector<std::vector<MatrixX_t>>
-    TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
-                                  bool infiniteStage) const
+    TheBlock::createNewRhoBasisH2(const vecMatD_t& siteBasisH2, bool exactDiag)
+    const
 {
     std::vector<std::vector<MatrixX_t>> newRhoBasisH2(farthestNeighborCoupling);
     for(auto newOffIRhoBasisH2 : newRhoBasisH2)
         newOffIRhoBasisH2.reserve(indepCouplingOperators);
     for(int j = 0; j < indepCouplingOperators; j++)
     {
-        newRhoBasisH2.front().push_back(infiniteStage ?
+        newRhoBasisH2.front().push_back(exactDiag ?
                                         kp(Id(m), siteBasisH2[j]) :
                                         changeBasis(kp(Id(m), siteBasisH2[j])));
         for(int i = 0, end = farthestNeighborCoupling - 1; i < end; i++)
             if(l >= i)
-                newRhoBasisH2[i + 1].push_back(infiniteStage ?
+                newRhoBasisH2[i + 1].push_back(exactDiag ?
                                                kp(rhoBasisH2[i][j], Id_d) :
                                                changeBasis(kp(rhoBasisH2[i][j],
                                                               Id_d)));
@@ -148,7 +148,12 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
         hSuper += data.ham.siteSiteJoin(thisSiteType, m, compm);
     return HamSolver(hSuper, vectorProductSum(hSprimeQNumList, hEprimeQNumList),
                      scaledTargetQNum, psiGround, data.lancTolerance);
-}
+};
+
+MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
+{
+    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
+};
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int skips)
@@ -166,11 +171,6 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
 };
 
 obsMatrixX_t TheBlock::obsChangeBasis(const obsMatrixX_t& mat) const
-{
-    return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
-};
-
-MatrixX_t TheBlock::changeBasis(const MatrixX_t& mat) const
 {
     return primeToRhoBasis.adjoint() * mat * primeToRhoBasis;
 };

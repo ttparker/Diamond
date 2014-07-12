@@ -3,9 +3,9 @@
 #define jprime couplingConstants[0]
 #define j1 couplingConstants[1]
 #define j2 couplingConstants[2]
-#define sigmaplus h2[0]
-#define sigmaz h2[1]
-#define sigmaminus h2[2]
+#define sigmaplus siteBasisH2[0]
+#define sigmaz siteBasisH2[1]
+#define sigmaminus siteBasisH2[2]
 #define offIRhoBasisSigmaplus offIRhoBasisH2[0]
 #define offIRhoBasisSigmaz offIRhoBasisH2[1]
 #define compOffIRhoBasisSigmaplus compOffIRhoBasisH2[0]
@@ -15,7 +15,7 @@ using namespace Eigen;
 
 Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
 {
-    h2.resize(3);
+    siteBasisH2.resize(3);
     sigmaplus << 0., 1.,
                  0., 0.;
     sigmaminus << 0., 0.,

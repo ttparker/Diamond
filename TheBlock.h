@@ -56,7 +56,7 @@ class TheBlock
                                const;
         std::vector<std::vector<MatrixX_t>>
             createNewRhoBasisH2(const vecMatD_t& siteBasisH2,
-                                bool infiniteStage) const;
+                                bool exactDiag) const;
         HamSolver createHSuperSolver(const stepData& data,
                                      const MatrixX_t& hSprime,
                                      const std::vector<int>& hSprimeQNumList,
