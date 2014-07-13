@@ -222,6 +222,7 @@ int main()
             };
         };
         data.compBlock = rightBlocksStart + (lEFinal - 1);
+        data.infiniteStage = false;
         FinalSuperblock hSuperFinal
             = leftBlocks[lSFinal - 1].createHSuperFinal(data, psiGround, skips);
                                                // calculate ground-state energy
