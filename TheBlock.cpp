@@ -18,17 +18,9 @@ TheBlock::TheBlock(const Hamiltonian& ham)
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 {
-    int thisSiteType = l % nSiteTypes;
-    MatrixX_t hSprime = kp(hS, Id_d)
-                        + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
-                                                         off0RhoBasisH2);
+    std::vector<int> hSprimeQNumList;
+    MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
                                                        // expanded system block
-    if(l != 0)
-        hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
-                                                  off1RhoBasisH2);
-    std::vector<int> hSprimeQNumList = vectorProductSum(qNumList,
-                                                        data.ham.oneSiteQNums);
-                                          // add in quantum numbers of new site
     std::vector<MatrixX_t> tempOff0RhoBasisH2,
                            tempOff1RhoBasisH2;
     tempOff0RhoBasisH2.reserve(indepCouplingOperators);
@@ -45,31 +37,27 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         return TheBlock(md, hSprimeQNumList, hSprime, tempOff0RhoBasisH2,
                         tempOff1RhoBasisH2, l + 1);
     };
-    int compSiteType = data.compBlock -> l % nSiteTypes,
-        compm = data.compBlock -> m,
-        compmd = compm * d;
-    MatrixX_t hEprime = (data.infiniteStage ?
-                         hSprime :
-                         kp(data.compBlock -> hS, Id_d)
-                         + data.ham.blockAdjacentSiteJoin(1, compSiteType,
-                                                          data.compBlock
-                                                          -> off0RhoBasisH2)
-                         + data.ham.blockAdjacentSiteJoin(2, compSiteType,
-                                                          data.compBlock
-                                                          -> off1RhoBasisH2));
-                                                  // expanded environment block
-    std::vector<int> hEprimeQNumList = (data.infiniteStage ?
-                                        hSprimeQNumList :
-                                        vectorProductSum(data.compBlock
-                                                         -> qNumList,
-                                                         data.ham.oneSiteQNums));
-    int scaledTargetQNum = (data.infiniteStage ?
-                            data.ham.targetQNum * (l + 2) / data.ham.lSys * 2 :
+    MatrixX_t hEprime;
+    std::vector<int> hEprimeQNumList;
+    int scaledTargetQNum;
+    if(data.infiniteStage)
+    {
+        hEprime = hSprime;
+        hEprimeQNumList = hSprimeQNumList;
+        scaledTargetQNum = data.ham.targetQNum * (l + 2) / data.ham.lSys * 2;
                                                // int automatically rounds down
-                            data.ham.targetQNum);
                          // during iDMRG stage, targets correct quantum number
                          // per unit site by scaling to fit current system size
                          // - note: this will change if d != 2
+    }
+    else
+    {
+        hEprime = createHprime(data.compBlock, data.ham, hEprimeQNumList);
+        scaledTargetQNum = data.ham.targetQNum;
+    };
+    int compm = data.compBlock -> m,
+        compmd = compm * d,
+        thisSiteType = l % nSiteTypes;
     HamSolver hSuperSolver(kp(hSprime, Id(compmd))
                            + data.ham.lBlockrSiteJoin(thisSiteType,
                                                       off0RhoBasisH2, compm)
@@ -116,33 +104,33 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                   // save expanded-block operators in new basis
 };
 
+MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
+                                 std::vector<int>& hPrimeQNumList) const
+{
+    int siteType = block -> l % nSiteTypes;
+    MatrixX_t hPrime = kp(block -> hS, Id_d)
+                       + ham.blockAdjacentSiteJoin(1, siteType,
+                                                   block -> off0RhoBasisH2);
+    if(l != 0)
+        hPrime += ham.blockAdjacentSiteJoin(2, siteType,
+                                            block -> off1RhoBasisH2);
+    hPrimeQNumList = vectorProductSum(block -> qNumList, ham.oneSiteQNums);
+                                          // add in quantum numbers of new site
+    return hPrime;
+};
+
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int skips)
                                             const
 {
-    int thisSiteType = l % nSiteTypes;
-    MatrixX_t hSprime = kp(hS, Id_d)
-                        + data.ham.blockAdjacentSiteJoin(1, thisSiteType,
-                                                         off0RhoBasisH2);
+    std::vector<int> hSprimeQNumList;
+    MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
                                                        // expanded system block
-    std::vector<int> hSprimeQNumList = vectorProductSum(qNumList,
-                                                        data.ham.oneSiteQNums);
-    if(l != 0)
-        hSprime += data.ham.blockAdjacentSiteJoin(2, thisSiteType,
-                                                  off1RhoBasisH2);
-    int compSiteType = data.compBlock -> l % nSiteTypes,
-        compm = data.compBlock -> m;
-    MatrixX_t hEprime = kp(data.compBlock -> hS, Id_d)
-                        + data.ham.blockAdjacentSiteJoin(1, compSiteType,
-                                                         data.compBlock
-                                                         -> off0RhoBasisH2)
-                        + data.ham.blockAdjacentSiteJoin(2, compSiteType,
-                                                         data.compBlock
-                                                         -> off1RhoBasisH2);
+    std::vector<int> hEprimeQNumList;
+    MatrixX_t hEprime = createHprime(data.compBlock, data.ham, hEprimeQNumList);
                                                   // expanded environment block
-    std::vector<int> hEprimeQNumList = vectorProductSum(data.compBlock
-                                                        -> qNumList,
-                                                        data.ham.oneSiteQNums);
+    int compm = data.compBlock -> m,
+        thisSiteType = l % nSiteTypes;
     MatrixX_t hSuper = kp(hSprime, Id(compm * d))
                        + data.ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2,
                                                   compm)
