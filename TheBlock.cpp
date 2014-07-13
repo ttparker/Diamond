@@ -17,17 +17,16 @@ TheBlock::TheBlock(const Hamiltonian& ham)
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 {
-    int thisSiteType = l % nSiteTypes;
     std::vector<int> hSprimeQNumList;
-    MatrixX_t hSprime = createHprime(this, data.ham, thisSiteType,
-                                     hSprimeQNumList); // expanded system block
+    MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
+                                                       // expanded system block
     if(data.exactDiag)
         return TheBlock(m * d, hSprimeQNumList, hSprime,
                         createNewRhoBasisH2(data.ham.siteBasisH2, true), l + 1);
       // if near edge of system, no truncation necessary so skip DMRG algorithm
     HamSolver hSuperSolver = createHSuperSolver(data, hSprime, hSprimeQNumList,
-                                                thisSiteType, psiGround);
-                                                 // find superblock eigenstates
+                                                psiGround);
+                                           // calculate superblock ground state
     psiGround = hSuperSolver.lowestEvec;                        // ground state
     psiGround.resize(m * d, data.compBlock -> m * d);
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList,
@@ -58,9 +57,10 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 };
 
 MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
-                                 int siteType, std::vector<int>& hprimeQNumList)
-                                 const
+                                 std::vector<int>& hprimeQNumList) const
 {
+    int siteType = block -> l % nSiteTypes;
+         // calculate the position in the lattice basis of the end of the block
     MatrixX_t hprime = kp(block -> hS, Id_d);
     for(int i = 1; i <= farthestNeighborCoupling; i++)
         if(block -> l >= i - 1 && ham.BASJ(i - 1, siteType))
@@ -97,8 +97,7 @@ std::vector<std::vector<MatrixX_t>>
 HamSolver TheBlock::createHSuperSolver(const stepData& data,
                                        const MatrixX_t& hSprime,
                                        const std::vector<int>& hSprimeQNumList,
-                                       int thisSiteType, rmMatrixX_t& psiGround)
-                                       const
+                                       rmMatrixX_t& psiGround) const
 {
     int comp_l;
     MatrixX_t hEprime;                            // expanded environment block
@@ -119,13 +118,13 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
     {
         comp_l = data.compBlock -> l;
         hEprime = createHprime(data.compBlock, data.ham,
-                               data.compBlock -> l % nSiteTypes,
                                hEprimeQNumList);
         scaledTargetQNum = data.ham.targetQNum;
     };
     int md = m * d,
         compm = data.compBlock -> m,
-        compmd = compm * d;
+        compmd = compm * d,
+        thisSiteType = l % nSiteTypes;
     MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd);
     for(int i = 2; i <= farthestNeighborCoupling; i++)
         if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
@@ -159,13 +158,12 @@ FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
                                             rmMatrixX_t& psiGround, int skips)
                                             const
 {
-    int thisSiteType = l % nSiteTypes;
     std::vector<int> hSprimeQNumList;
-    MatrixX_t hSprime = createHprime(this, data.ham, thisSiteType,
-                                     hSprimeQNumList); // expanded system block
+    MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
+                                                       // expanded system block
     HamSolver hSuperSolver = createHSuperSolver(data, hSprime, hSprimeQNumList,
-                                                thisSiteType, psiGround);
-                                           // find final superblock eigenstates
+                                                psiGround);
+                                     // calculate final superblock ground state
     return FinalSuperblock(hSuperSolver, data.ham.lSys, m, data.compBlock-> m,
                            skips);
 };
