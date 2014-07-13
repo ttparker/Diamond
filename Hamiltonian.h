@@ -28,7 +28,7 @@ class Hamiltonian
         std::vector<double> LBRSJ,
                             LSRBJ,
                             SSJ;
-        std::vector<MatrixD_t, Eigen::aligned_allocator<MatrixD_t>> h2;
+        std::vector<MatrixD_t, Eigen::aligned_allocator<MatrixD_t>> siteBasisH2;
                                                // site-basis coupling operators
         
         MatrixX_t blockAdjacentSiteJoin(int jType, int siteType,

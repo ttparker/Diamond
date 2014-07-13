@@ -12,8 +12,8 @@ TheBlock::TheBlock(int m, const std::vector<int>& qNumList, const MatrixX_t& hS,
 TheBlock::TheBlock(const Hamiltonian& ham)
     : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
 {
-    off0RhoBasisH2.assign(ham.h2.begin(),
-                          ham.h2.begin() + indepCouplingOperators);
+    off0RhoBasisH2.assign(ham.siteBasisH2.begin(),
+                          ham.siteBasisH2.begin() + indepCouplingOperators);
 };
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
@@ -39,7 +39,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     {
         for(int i = 0; i < indepCouplingOperators; i++)
         {
-            tempOff0RhoBasisH2.push_back(kp(Id(m), data.ham.h2[i]));
+            tempOff0RhoBasisH2.push_back(kp(Id(m), data.ham.siteBasisH2[i]));
             tempOff1RhoBasisH2.push_back(kp(off0RhoBasisH2[i], Id_d));
         };
         return TheBlock(md, hSprimeQNumList, hSprime, tempOff0RhoBasisH2,
@@ -88,7 +88,8 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     primeToRhoBasis = rhoSolver.highestEvecs; // construct change-of-basis matrix
     for(int i = 0; i < indepCouplingOperators; i++)
     {
-        tempOff0RhoBasisH2.push_back(changeBasis(kp(Id(m), data.ham.h2[i])));
+        tempOff0RhoBasisH2.push_back(changeBasis(kp(Id(m),
+                                                    data.ham.siteBasisH2[i])));
         tempOff1RhoBasisH2.push_back(changeBasis(kp(off0RhoBasisH2[i], Id_d)));
     };
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
