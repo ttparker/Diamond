@@ -3,6 +3,8 @@
 
 #include "Hamiltonian.h"
 
+typedef std::pair<std::vector<MatrixX_t>, std::vector<MatrixX_t>> matPair;
+
 class FinalSuperblock;
 class TheBlock;
 
@@ -27,10 +29,7 @@ class TheBlock
         TheBlock(int m = 0,
                  const std::vector<int>& qNumList = std::vector<int>(),
                  const MatrixX_t& hS = MatrixX_t(),
-                 const std::vector<MatrixX_t>& off0RhoBasisH2 
-                     = std::vector<MatrixX_t>(),
-                 const std::vector<MatrixX_t>& off1RhoBasisH2
-                     = std::vector<MatrixX_t>(),
+                 const matPair newRhoBasisH2s = matPair(),
                  int l = 0);
         TheBlock(const Hamiltonian& ham);
         TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);
@@ -55,6 +54,8 @@ class TheBlock
         
         MatrixX_t createHprime(const TheBlock* block, const Hamiltonian& ham,
                                std::vector<int>& hPrimeQNumList) const;
+        matPair createNewRhoBasisH2s(const vecMatD_t& siteBasisH2,
+                                     bool exactDiag) const;
         MatrixX_t changeBasis(const MatrixX_t& mat) const;
                    // represents operators in the basis of the new system block
 };

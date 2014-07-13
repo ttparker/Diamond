@@ -4,10 +4,9 @@
 using namespace Eigen;
 
 TheBlock::TheBlock(int m, const std::vector<int>& qNumList, const MatrixX_t& hS,
-                   const std::vector<MatrixX_t>& off0RhoBasisH2,
-                   const std::vector<MatrixX_t>& off1RhoBasisH2, int l)
-    : m(m), qNumList(qNumList), hS(hS), off0RhoBasisH2(off0RhoBasisH2),
-      off1RhoBasisH2(off1RhoBasisH2), l(l) {};
+                   const matPair newRhoBasisH2s, int l)
+    : m(m), qNumList(qNumList), hS(hS), off0RhoBasisH2(newRhoBasisH2s.first),
+      off1RhoBasisH2(newRhoBasisH2s.second), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& ham)
     : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
@@ -21,22 +20,11 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     std::vector<int> hSprimeQNumList;
     MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
                                                        // expanded system block
-    std::vector<MatrixX_t> tempOff0RhoBasisH2,
-                           tempOff1RhoBasisH2;
-    tempOff0RhoBasisH2.reserve(indepCouplingOperators);
-    tempOff1RhoBasisH2.reserve(indepCouplingOperators);
     int md = m * d;
     if(data.exactDiag)
+        return TheBlock(md, hSprimeQNumList, hSprime,
+                        createNewRhoBasisH2s(data.ham.siteBasisH2, true), l + 1);
       // if near edge of system, no truncation necessary so skip DMRG algorithm
-    {
-        for(int i = 0; i < indepCouplingOperators; i++)
-        {
-            tempOff0RhoBasisH2.push_back(kp(Id(m), data.ham.siteBasisH2[i]));
-            tempOff1RhoBasisH2.push_back(kp(off0RhoBasisH2[i], Id_d));
-        };
-        return TheBlock(md, hSprimeQNumList, hSprime, tempOff0RhoBasisH2,
-                        tempOff1RhoBasisH2, l + 1);
-    };
     MatrixX_t hEprime;
     std::vector<int> hEprimeQNumList;
     int scaledTargetQNum;
@@ -74,12 +62,6 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList,
                        data.mMax);           // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.highestEvecs; // construct change-of-basis matrix
-    for(int i = 0; i < indepCouplingOperators; i++)
-    {
-        tempOff0RhoBasisH2.push_back(changeBasis(kp(Id(m),
-                                                    data.ham.siteBasisH2[i])));
-        tempOff1RhoBasisH2.push_back(changeBasis(kp(off0RhoBasisH2[i], Id_d)));
-    };
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < md; sPrimeIndex++)
@@ -100,7 +82,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                          * data.beforeCompBlock -> primeToRhoBasis.rows(), 1);
     };
     return TheBlock(data.mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
-                    tempOff0RhoBasisH2, tempOff1RhoBasisH2, l + 1);
+                    createNewRhoBasisH2s(data.ham.siteBasisH2, false), l + 1);
                                   // save expanded-block operators in new basis
 };
 
@@ -117,6 +99,25 @@ MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
     hPrimeQNumList = vectorProductSum(block -> qNumList, ham.oneSiteQNums);
                                           // add in quantum numbers of new site
     return hPrime;
+};
+
+matPair TheBlock::createNewRhoBasisH2s(const vecMatD_t& siteBasisH2,
+                                       bool exactDiag) const
+{
+    std::vector<MatrixX_t> newOff0RhoBasisH2,
+                           newOff1RhoBasisH2;
+    newOff0RhoBasisH2.reserve(indepCouplingOperators);
+    newOff1RhoBasisH2.reserve(indepCouplingOperators);
+    for(int i = 0; i < indepCouplingOperators; i++)
+    {
+        newOff0RhoBasisH2.push_back(exactDiag ?
+                                    kp(Id(m), siteBasisH2[i]) :
+                                    changeBasis(kp(Id(m), siteBasisH2[i])));
+        newOff1RhoBasisH2.push_back(exactDiag ?
+                                    kp(off0RhoBasisH2[i], Id_d) :
+                                    changeBasis(kp(off0RhoBasisH2[i], Id_d)));
+    };
+    return std::make_pair(newOff0RhoBasisH2, newOff1RhoBasisH2);
 };
 
 FinalSuperblock TheBlock::createHSuperFinal(const stepData& data,
