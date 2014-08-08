@@ -9,34 +9,28 @@
 #include "GlobalHamiltonianParameters.h"
 
 #ifdef realHamiltonian
-    typedef Eigen::Matrix<double, d, d> MatrixD_t;
-    typedef Eigen::MatrixXd MatrixX_t;
-    typedef Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
-        rmMatrixX_t;
-    typedef Eigen::VectorXd VectorX_t;
+    typedef double hamScalar;
 #elif defined(complexHamiltonian)
-    typedef Eigen::Matrix<std::complex<double>, d, d> MatrixD_t;
-    typedef Eigen::MatrixXcd MatrixX_t;
-    typedef Eigen::Matrix<std::complex<double>, Eigen::Dynamic, Eigen::Dynamic,
-                          Eigen::RowMajor> rmMatrixX_t;
-    typedef Eigen::VectorXcd VectorX_t;
+    typedef std::complex<double> hamScalar;
 #endif
 
 #if defined(realHamiltonian) && defined(realObservables)
-    #define obsId_d Matrix<double, d, d>::Identity()
-    #define obsId(size) MatrixXd::Identity(size, size)
     #define obsRe
-    
-    typedef Eigen::Matrix<double, d, d> obsMatrixD_t;
-    typedef Eigen::MatrixXd obsMatrixX_t;
+    typedef double obsScalar;
 #elif defined(complexObservables) || defined(complexHamiltonian)
-    // are their any complex elements in either the Hamiltonian or the observables?
-    #define obsId_d Matrix<std::complex<double>, d, d>::Identity()
-    #define obsId(size) MatrixXcd::Identity(size, size)
     #define obsRe std::real
-    
-    typedef Eigen::Matrix<std::complex<double>, d, d> obsMatrixD_t;
-    typedef Eigen::MatrixXcd obsMatrixX_t;
+    typedef std::complex<double> obsScalar;
 #endif
+
+#define obsId_d Matrix<obsScalar, d, d>::Identity()
+#define obsId(size) Matrix<obsScalar, Eigen::Dynamic, Eigen::Dynamic>::Identity(size, size)
+
+typedef Eigen::Matrix<hamScalar, d, d> MatrixD_t;
+typedef Eigen::Matrix<hamScalar, Eigen::Dynamic, Eigen::Dynamic> MatrixX_t;
+typedef Eigen::Matrix<hamScalar, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
+    rmMatrixX_t;
+typedef Eigen::Matrix<hamScalar, Eigen::Dynamic, 1> VectorX_t;
+typedef Eigen::Matrix<obsScalar, d, d> obsMatrixD_t;
+typedef Eigen::Matrix<obsScalar, Eigen::Dynamic, Eigen::Dynamic> obsMatrixX_t;
 
 #endif
