@@ -111,12 +111,14 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
         double gStateError = std::abs(1 - std::abs(seed.col(0)
                                                    .dot((mat * seed).col(0)
                                                         .normalized())));
-        if(gStateError > lancTolerance)
+        std::cout << "Warning: final Lanczos iteration reached. The inner "
+                  << "product of the final approximate ground state and its "
+                  << "normalized image differs from 1 by " << gStateError
+                  << std::endl;
+        if(gStateError > fallbackLancTolerance)
         {
             std::cerr << "Lanczos algorithm failed to converge after "
-                      << maxIters << " iterations. The inner product of the "
-                      << "final approximate ground state and its normalized "
-                      << "image differs from 1 by " << gStateError << std::endl;
+                      << maxIters << " iterations." << std::endl;
             exit(EXIT_FAILURE);
         };
     };
