@@ -56,7 +56,7 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
     int LDZ,
         NZC = 1;
     std::vector<int> ISUPPZ;
-    ISUPPZ.reserve(2);
+    ISUPPZ.resize(2);
     bool TRYRAC = true;
     double optLWORK;
     std::vector<double> WORK;
@@ -83,9 +83,9 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
         // Lanczos stage 2: diagonalize tridiagonal matrix
         N++;
         D = a;
-        E.reserve(N);
+        E.resize(N);
         E.assign(b.begin() + 1, b.end());
-        W.reserve(N);
+        W.resize(N);
         Z.resize(N);
         LDZ = N;
         LWORK = -1;
@@ -95,9 +95,9 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
                 &optLWORK, &LWORK, &optLIWORK, &LIWORK, &INFO);
                                      // query for optimal workspace allocations
         LWORK = int(optLWORK);
-        WORK.reserve(LWORK);
+        WORK.resize(LWORK);
         LIWORK = optLIWORK;
-        IWORK.reserve(LIWORK);
+        IWORK.resize(LIWORK);
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
                 W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
                 WORK.data(), &LWORK, IWORK.data(), &LIWORK, &INFO);
