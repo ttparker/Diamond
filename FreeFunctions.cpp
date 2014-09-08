@@ -19,7 +19,7 @@ std::vector<int> vectorProductSum(const std::vector<int>& first,
     prod.reserve(firstSize * secondSize);
     for(int i = 0; i < firstSize; i++)
         for(int j = 0; j < secondSize; j++)
-            prod.push_back(first.at(i) + second.at(j));
+            prod.push_back(first[i] + second[j]);
     return prod;
 };
 
