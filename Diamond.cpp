@@ -17,7 +17,7 @@ using namespace Eigen;
 
 Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
 {
-    siteBasisH2.resize(3);
+    siteBasisH2.resize(nCouplingOperators);
     sigmaplus << 0., 1.,
                  0., 0.;
     sigmaminus << 0., 0.,

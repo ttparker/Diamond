@@ -11,7 +11,7 @@ TheBlock::TheBlock(const Hamiltonian& ham)
     : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
 {
     off0RhoBasisH2.assign(ham.siteBasisH2.begin(),
-                          ham.siteBasisH2.begin() + indepCouplingOperators);
+                          ham.siteBasisH2.begin() + nIndepCouplingOperators);
 };
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
@@ -77,9 +77,9 @@ matPair TheBlock::createNewRhoBasisH2s(const vecMatD_t& siteBasisH2,
 {
     std::vector<MatrixX_t> newOff0RhoBasisH2,
                            newOff1RhoBasisH2;
-    newOff0RhoBasisH2.reserve(indepCouplingOperators);
-    newOff1RhoBasisH2.reserve(indepCouplingOperators);
-    for(int i = 0; i < indepCouplingOperators; i++)
+    newOff0RhoBasisH2.reserve(nIndepCouplingOperators);
+    newOff1RhoBasisH2.reserve(nIndepCouplingOperators);
+    for(int i = 0; i < nIndepCouplingOperators; i++)
     {
         newOff0RhoBasisH2.push_back(exactDiag ?
                                     kp(Id(m), siteBasisH2[i]) :
