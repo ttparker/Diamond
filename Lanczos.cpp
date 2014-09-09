@@ -54,9 +54,8 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
     W.reserve(minIters);
     VectorXd Z;
     int LDZ,
-        NZC = 1;
-    std::vector<int> ISUPPZ;
-    ISUPPZ.resize(2);
+        NZC = 1,
+        ISUPPZ[2];
     bool TRYRAC = true;
     double optLWORK;
     std::vector<double> WORK;
@@ -91,17 +90,16 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
         LWORK = -1;
         LIWORK = -1;
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
-                W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
-                &optLWORK, &LWORK, &optLIWORK, &LIWORK, &INFO);
+                W.data(), Z.data(), &LDZ, &NZC, ISUPPZ, &TRYRAC, &optLWORK,
+                &LWORK, &optLIWORK, &LIWORK, &INFO);
                                      // query for optimal workspace allocations
         LWORK = int(optLWORK);
         WORK.resize(LWORK);
         LIWORK = optLIWORK;
         IWORK.resize(LIWORK);
         dstemr_(&JOBZ, &RANGE, &N, D.data(), E.data(), &VL, &VU, &IL, &IU, &M,
-                W.data(), Z.data(), &LDZ, &NZC, ISUPPZ.data(), &TRYRAC,
-                WORK.data(), &LWORK, IWORK.data(), &LIWORK, &INFO);
-                                                      // calculate ground state
+                W.data(), Z.data(), &LDZ, &NZC, ISUPPZ, &TRYRAC, WORK.data(),
+                &LWORK, IWORK.data(), &LIWORK, &INFO); // calculate ground state
         seed = (basisVecs * Z).normalized();
         gStateDiff = std::abs(1 - std::abs(seed.col(0).dot(oldGS)));
     } while(N < minIters || (N < maxIters && gStateDiff > lancTolerance));
