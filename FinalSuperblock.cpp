@@ -46,7 +46,7 @@ double FinalSuperblock::expValue(const opsVec& ops,
             placeOp(opToEvaluate, envBlockOps, false);
     };
     
-    //evaluate observable:
+    // evaluate observable:
     if(sysBlockOps.empty() && !opAtlFreeSite)
                         // observables in right-hand half of superblock case
         if(envBlockOps.empty())
