@@ -35,12 +35,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < m * d; sPrimeIndex++)
-                    // transpose the environment block and right-hand free site
+                // transpose the environment block and the right-hand free site
         {
             rmMatrixX_t ePrime = psiGround.row(sPrimeIndex);
             ePrime.resize(data.compBlock -> m, d);
             ePrime.transposeInPlace();
-            ePrime.resize(1, data.compBlock-> m * d);
+            ePrime.resize(1, d * data.compBlock -> m);
             psiGround.row(sPrimeIndex) = ePrime;
         };
         psiGround = primeToRhoBasis.adjoint() * psiGround; 
@@ -48,8 +48,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         psiGround.resize(data.mMax * d, data.compBlock -> m);
         psiGround *= data.beforeCompBlock -> primeToRhoBasis.transpose();
                                           // change the environment block basis
-        psiGround.resize(data.mMax * d
-                         * data.beforeCompBlock -> primeToRhoBasis.rows(), 1);
+        psiGround.resize(data.mMax * d * data.beforeCompBlock -> m * d, 1);
     };
     return TheBlock(data.mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
                     createNewRhoBasisH2(data.ham.siteBasisH2, false), l + 1);
