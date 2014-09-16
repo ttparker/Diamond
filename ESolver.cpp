@@ -1,5 +1,6 @@
 #include <map>
 #include <set>
+#include "GlobalPrecisionParameters.h"
 #include "main.h"
 #include "ESolver.h"
 
@@ -60,7 +61,7 @@ HamSolver::HamSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
 };
 
 DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
-                   int evecsToKeep)
+                   int maxEvecsToKeep)
 {
     std::map<int, Sector> sectors;        // key is the sector's quantum number
     std::multimap<double, int> indexedEvals;         // eigenvalue, then sector
@@ -75,8 +76,34 @@ DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                                                        .eigenvalues()(i), qNum));
                                              // add indexed eigenvalues to list
     };
+    int matSize = mat.rows(),
+        evecsToKeep;
+    if(matSize <= maxEvecsToKeep)
+        evecsToKeep = matSize;
+    else
+    {
+        evecsToKeep = maxEvecsToKeep;
+        auto weight = indexedEvals.crbegin();
+        std::advance(weight, maxEvecsToKeep - 1);
+        for(; evecsToKeep >= 1
+              && (weight -> first == 0
+                  || (weight -> first - std::next(weight, 1) -> first)
+                      / std::abs(weight -> first) < degenerateDMCutoff);
+            evecsToKeep--, weight--);
+              // find the the max number of eigenvectors to keep that do not
+              // terminate inside a degenerate eigenspace of the density matrix
+        if(evecsToKeep == 0)
+        {
+            std::cerr << "More than mMax highest-weighted density-matrix "
+                      << "eigenvectors are degenerate." << std::endl;
+            exit(EXIT_FAILURE);
+        }
+        else if(evecsToKeep != maxEvecsToKeep)
+            std::cout << "Warning: mMax truncation ends in a degenerate DM "
+                      << "eigenspace, lowering cutoff to " << evecsToKeep
+                      << " states." << std::endl;
+    };
     highestEvecQNums.reserve(evecsToKeep);
-    int matSize = mat.rows();
     highestEvecs = MatrixX_t::Zero(matSize, evecsToKeep);
     auto currentIndexedEval = indexedEvals.crbegin();
     for(int j = 0; j < evecsToKeep; j++)

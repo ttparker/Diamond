@@ -45,7 +45,7 @@ class DMSolver
         std::vector<int> highestEvecQNums;
         
         DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
-                 int evecsToKeep);
+                 int maxEvecsToKeep);
     
     friend class TheBlock;
 };

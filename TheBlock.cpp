@@ -32,6 +32,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList,
                        data.mMax);           // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.highestEvecs; // construct change-of-basis matrix
+    int nextBlockm = primeToRhoBasis.cols();
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < m * d; sPrimeIndex++)
@@ -45,12 +46,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         };
         psiGround = primeToRhoBasis.adjoint() * psiGround; 
                                       // change the expanded system block basis
-        psiGround.resize(data.mMax * d, data.compBlock -> m);
+        psiGround.resize(nextBlockm * d, data.compBlock -> m);
         psiGround *= data.beforeCompBlock -> primeToRhoBasis.transpose();
                                           // change the environment block basis
-        psiGround.resize(data.mMax * d * data.beforeCompBlock -> m * d, 1);
+        psiGround.resize(nextBlockm * d * data.beforeCompBlock -> m * d, 1);
     };
-    return TheBlock(data.mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
+    return TheBlock(nextBlockm, rhoSolver.highestEvecQNums, changeBasis(hSprime),
                     createNewRhoBasisH2(data.ham.siteBasisH2, false), l + 1);
                                   // save expanded-block operators in new basis
 };
@@ -122,7 +123,8 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
         compmd = compm * d,
         thisSiteType = l % nSiteTypes;
     MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd),
-              hlSiterBlock = hlBlockrSite;
+              hlSiterBlock = hlBlockrSite,
+              hBlockBlock = hlBlockrSite;
     if(data.infiniteStage && (data.ham.lSys - 2 * l - 4) % nSiteTypes)
                          // current system size incommensurate with final size?
     {
@@ -150,6 +152,13 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
                     += data.ham.lBlockrSiteJoin(i, compSiteType,
                                                 rhoBasisH2[i - 2], compm) / 2;
             };
+        hBlockBlock = (data.ham.blockBlockJoin(thisSiteType, l,
+                                               data.compBlock -> l, rhoBasisH2,
+                                               data.compBlock -> rhoBasisH2)
+                       + data.ham.blockBlockJoin(compSiteType, l,
+                                                 data.compBlock -> l, rhoBasisH2,
+                                                 data.compBlock
+                                                 -> rhoBasisH2)) / 2;
     }
     else
     {
@@ -163,13 +172,13 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
                 hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
                                                          data.compBlock
                                                          -> rhoBasisH2[i - 2]);
+        hBlockBlock = data.ham.blockBlockJoin(thisSiteType, l,
+                                              data.compBlock -> l, rhoBasisH2,
+                                              data.compBlock -> rhoBasisH2);
     };
     MatrixX_t hSuper = kp(hSprime, Id(compmd))
                           + hlBlockrSite
-                          + data.ham.blockBlockJoin(thisSiteType, l,
-                                                    data.compBlock -> l,
-                                                    rhoBasisH2,
-                                                    data.compBlock -> rhoBasisH2)
+                          + hBlockBlock
                           + hlSiterBlock
                           + kp(Id(md), hEprime);                  // superblock
     if(data.ham.SSJ[thisSiteType])
