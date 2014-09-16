@@ -62,31 +62,23 @@ HamSolver::HamSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
 DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                    int evecsToKeep)
 {
-    std::map<int, Sector> sectors;                 // key is the quantum number
-    std::map<double, int> indexedEvals;              // eigenvalue, then sector
-    std::set<int, std::greater<int>> qNumSet(qNumList.begin(), qNumList.end());
-    // set of quantum numbers are stored in descending order so that if density
-    // matrix has high nullity, higher-number null states are stored with higher
-    // weight
-    double nullStateCounter = 0.;        // how many density-matrix eigenstates
-                         // so far have zero weight - counts downward from zero
+    std::map<int, Sector> sectors;        // key is the sector's quantum number
+    std::multimap<double, int> indexedEvals;         // eigenvalue, then sector
+    std::set<int> qNumSet(qNumList.begin(), qNumList.end());
     for(int qNum : qNumSet)                 // make list of indexed eigenvalues
     {
         sectors.insert(sectors.end(),                          // create sector
                        std::make_pair(qNum, Sector(qNumList, qNum, mat)));
         sectors[qNum].solveForAll();
         for(int i = 0, end = sectors[qNum].multiplicity; i < end; i++)
-        {
-            double eval = sectors[qNum].solver.eigenvalues()(i);
-            indexedEvals.insert(std::pair<double, int>
-                (eval == 0. ? nullStateCounter-- : eval, qNum));
+            indexedEvals.insert(std::pair<double, int>(sectors[qNum].solver
+                                                       .eigenvalues()(i), qNum));
                                              // add indexed eigenvalues to list
-        };
     };
     highestEvecQNums.reserve(evecsToKeep);
     int matSize = mat.rows();
     highestEvecs = MatrixX_t::Zero(matSize, evecsToKeep);
-    auto currentIndexedEval = indexedEvals.rbegin();
+    auto currentIndexedEval = indexedEvals.crbegin();
     for(int j = 0; j < evecsToKeep; j++)
     {
         int qNum = currentIndexedEval++ -> second;
