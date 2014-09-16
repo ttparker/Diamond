@@ -71,21 +71,21 @@ MatrixX_t Hamiltonian::lBlockrSiteJoin(int jType, int siteType,
               + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixX_t Hamiltonian::lSiterBlockJoin(int jType, int siteType, int ml,
+MatrixX_t Hamiltonian::lSiterBlockJoin(int jType, int siteType, int m,
                                        const std::vector<MatrixX_t>&
                                        compOffIRhoBasisH2) const
 {
     MatrixX_t plusMinus = kp(sigmaplus, compOffIRhoBasisSigmaplus.adjoint());
     return LSRBJ(jType - 2, siteType)
-           * kp(kp(Id(ml), kp(sigmaz, compOffIRhoBasisSigmaz)
+           * kp(kp(Id(m), kp(sigmaz, compOffIRhoBasisSigmaz)
                            + 2 * (plusMinus + plusMinus.adjoint())),
                 Id_d);
 };
 
-MatrixX_t Hamiltonian::siteSiteJoin(int siteType, int ml, int compm) const
+MatrixX_t Hamiltonian::siteSiteJoin(int siteType, int m, int compm) const
 {
     MatrixX_t plusMinus = kp(kp(sigmaplus, Id(compm)), sigmaminus);
-    return SSJ[siteType] * kp(Id(ml), kp(kp(sigmaz, Id(compm)), sigmaz)
+    return SSJ[siteType] * kp(Id(m), kp(kp(sigmaz, Id(compm)), sigmaz)
                                       + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
