@@ -12,7 +12,7 @@ TheBlock::TheBlock(const Hamiltonian& ham)
 {
     rhoBasisH2.resize(farthestNeighborCoupling);
     rhoBasisH2.front().assign(ham.siteBasisH2.begin(),
-                              ham.siteBasisH2.begin() + indepCouplingOperators);
+                              ham.siteBasisH2.begin() + nIndepCouplingOperators);
 };
 
 TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
@@ -78,8 +78,8 @@ std::vector<std::vector<MatrixX_t>>
 {
     std::vector<std::vector<MatrixX_t>> newRhoBasisH2(farthestNeighborCoupling);
     for(auto newOffIRhoBasisH2 : newRhoBasisH2)
-        newOffIRhoBasisH2.reserve(indepCouplingOperators);
-    for(int j = 0; j < indepCouplingOperators; j++)
+        newOffIRhoBasisH2.reserve(nIndepCouplingOperators);
+    for(int j = 0; j < nIndepCouplingOperators; j++)
     {
         newRhoBasisH2.front().push_back(exactDiag ?
                                         kp(Id(m), siteBasisH2[j]) :
