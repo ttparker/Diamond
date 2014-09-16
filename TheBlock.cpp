@@ -99,13 +99,11 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
                                        const std::vector<int>& hSprimeQNumList,
                                        rmMatrixX_t& psiGround) const
 {
-    int comp_l;
     MatrixX_t hEprime;                            // expanded environment block
     std::vector<int> hEprimeQNumList;
     int scaledTargetQNum;
     if(data.infiniteStage)
     {
-        comp_l = l;
         hEprime = hSprime;
         hEprimeQNumList = hSprimeQNumList;
         scaledTargetQNum = data.ham.targetQNum * (l + 2) / data.ham.lSys * 2;
@@ -116,7 +114,6 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
     }
     else
     {
-        comp_l = data.compBlock -> l;
         hEprime = createHprime(data.compBlock, data.ham,
                                hEprimeQNumList);
         scaledTargetQNum = data.ham.targetQNum;
@@ -125,20 +122,53 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
         compm = data.compBlock -> m,
         compmd = compm * d,
         thisSiteType = l % nSiteTypes;
-    MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd);
-    for(int i = 2; i <= farthestNeighborCoupling; i++)
-        if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
-            hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
-                                                     rhoBasisH2[i - 2], compm);
-    MatrixX_t hlSiterBlock = MatrixX_t::Zero(md * compmd, md * compmd);
-    for(int i = 2; i <= farthestNeighborCoupling; i++)
-        if(comp_l >= i - 2 && data.ham.LSRBJ(i - 2, thisSiteType))
-            hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
-                                                     data.compBlock
-                                                     -> rhoBasisH2[i - 2]);
+    MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd),
+              hlSiterBlock = hlBlockrSite;
+    if(data.infiniteStage && (data.ham.lSys - 2 * l - 4) % nSiteTypes)
+                         // current system size incommensurate with final size?
+    {
+        int compSiteType = (data.ham.lSys - 4 - l) % nSiteTypes;
+        for(int i = 2; i <= farthestNeighborCoupling; i++)
+            if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
+            {
+                hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
+                                                         rhoBasisH2[i - 2],
+                                                         compm) / 2;
+                hlSiterBlock
+                    += data.ham.lSiterBlockJoin(i, compSiteType, m,
+                                                data.compBlock
+                                                -> rhoBasisH2[i - 2]) / 2;
+            };
+        for(int i = 2; i <= farthestNeighborCoupling; i++)
+            if(data.compBlock -> l >= i - 2
+               && data.ham.LSRBJ(i - 2, thisSiteType))
+            {
+                hlSiterBlock
+                    += data.ham.lSiterBlockJoin(i, thisSiteType, m,
+                                                data.compBlock
+                                                -> rhoBasisH2[i - 2]) / 2;
+                hlBlockrSite
+                    += data.ham.lBlockrSiteJoin(i, compSiteType,
+                                                rhoBasisH2[i - 2], compm) / 2;
+            };
+    }
+    else
+    {
+        for(int i = 2; i <= farthestNeighborCoupling; i++)
+            if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
+                hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
+                                                         rhoBasisH2[i - 2], compm);
+        for(int i = 2; i <= farthestNeighborCoupling; i++)
+            if(data.compBlock -> l >= i - 2
+               && data.ham.LSRBJ(i - 2, thisSiteType))
+                hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
+                                                         data.compBlock
+                                                         -> rhoBasisH2[i - 2]);
+    };
     MatrixX_t hSuper = kp(hSprime, Id(compmd))
                           + hlBlockrSite
-                          + data.ham.blockBlockJoin(thisSiteType, l, comp_l,
+                          + data.ham.blockBlockJoin(thisSiteType, l,
+                                                    data.compBlock -> l,
                                                     rhoBasisH2,
                                                     data.compBlock -> rhoBasisH2)
                           + hlSiterBlock
