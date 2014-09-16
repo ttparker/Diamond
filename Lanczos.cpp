@@ -54,8 +54,8 @@ double Sector::lanczos(const MatrixX_t& mat, rmMatrixX_t& seed,
     W.reserve(minIters);
     VectorXd Z;
     int LDZ,
-        NZC = 1;
-    int ISUPPZ[2];
+        NZC = 1,
+        ISUPPZ[2];
     bool TRYRAC = true;
     double optLWORK;
     std::vector<double> WORK;
