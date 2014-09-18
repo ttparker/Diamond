@@ -12,10 +12,6 @@ typedef std::vector<MatrixD_t, Eigen::aligned_allocator<MatrixD_t>> vecMatD_t;
 class Hamiltonian
 {
     public:
-        std::vector<int> oneSiteQNums;              // one-site quantum numbers
-        int targetQNum,                              // targeted quantum number
-            lSys;                                      // current system length
-        
         Hamiltonian();
         void setParams(const std::vector<double>& couplingConstantsIn,
                        int targetQNumIn, int lSysIn);
@@ -33,6 +29,9 @@ class Hamiltonian
         Eigen::Matrix<double, 5, nSiteTypes> LBRSJ,
                                              LSRBJ;
         std::vector<double> SSJ;
+        std::vector<int> oneSiteQNums;              // one-site quantum numbers
+        int targetQNum,                              // targeted quantum number
+            lSys;                                      // current system length
         vecMatD_t siteBasisH2;                 // site-basis coupling operators
         
         MatrixX_t blockAdjacentSiteJoin(int jType, int siteType,
