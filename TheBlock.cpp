@@ -5,10 +5,11 @@ using namespace Eigen;
 
 TheBlock::TheBlock(int m, const MatrixX_t& hS, const std::vector<int>& qNumList,
                    const std::vector<std::vector<MatrixX_t>>& rhoBasisH2, int l)
-    : m(m), hS(hS), qNumList(qNumList), rhoBasisH2(rhoBasisH2), l(l) {};
+    : m(m), hS(hS), siteType(l % nSiteTypes), qNumList(qNumList),
+      rhoBasisH2(rhoBasisH2), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& ham)
-    : m(d), hS(MatrixD_t::Zero()), qNumList(ham.oneSiteQNums), l(0)
+    : m(d), hS(MatrixD_t::Zero()), siteType(0), qNumList(ham.oneSiteQNums), l(0)
 {
     rhoBasisH2.resize(farthestNeighborCoupling);
     rhoBasisH2.front().assign(ham.siteBasisH2.begin(),
@@ -59,13 +60,11 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
                                  std::vector<int>& hprimeQNumList) const
 {
-    int siteType = block -> l % nSiteTypes;
-         // calculate the position in the lattice basis of the end of the block
     MatrixX_t hprime = kp(block -> hS, Id_d);
     for(int i = 1, end = std::min(block -> l + 1, farthestNeighborCoupling);
         i <= end; i++)
-        if(ham.couplings(siteType, i))
-            hprime += ham.blockAdjacentSiteJoin(siteType, i,
+        if(ham.couplings(block -> siteType, i))
+            hprime += ham.blockAdjacentSiteJoin(block -> siteType, i,
                                                 block -> rhoBasisH2[i - 1]);
                                                      // add in longer couplings
     hprimeQNumList = vectorProductSum(block -> qNumList, ham.oneSiteQNums);
@@ -120,8 +119,7 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
     };
     int md = m * d,
         compm = data.compBlock -> m,
-        compmd = compm * d,
-        thisSiteType = l % nSiteTypes;
+        compmd = compm * d;
     MatrixX_t hlBlockrSite = MatrixX_t::Zero(md * compmd, md * compmd),
               hlSiterBlock = hlBlockrSite,
               hBlockBlock = hlBlockrSite;
@@ -131,9 +129,9 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
         int compSiteType = (data.ham.lSys - 4 - l) % nSiteTypes;
         for(int i = 2, end = std::min(l + 2, farthestNeighborCoupling);
             i <= end; i++)
-            if(data.ham.couplings((thisSiteType + 1) % nSiteTypes, i))
+            if(data.ham.couplings((siteType + 1) % nSiteTypes, i))
             {
-                hlBlockrSite += data.ham.lBlockrSiteJoin(thisSiteType, i,
+                hlBlockrSite += data.ham.lBlockrSiteJoin(siteType, i,
                                                          rhoBasisH2[i - 2],
                                                          compm) / 2;
                 hlSiterBlock
@@ -143,17 +141,17 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
             };
         for(int i = 2, end = std::min(data.compBlock -> l + 2,
                                       farthestNeighborCoupling); i <= end; i++)
-            if(data.ham.couplings((thisSiteType + i) % nSiteTypes, i))
+            if(data.ham.couplings((siteType + i) % nSiteTypes, i))
             {
                 hlSiterBlock
-                    += data.ham.lSiterBlockJoin(thisSiteType, i, m,
+                    += data.ham.lSiterBlockJoin(siteType, i, m,
                                                 data.compBlock
                                                 -> rhoBasisH2[i - 2]) / 2;
                 hlBlockrSite
                     += data.ham.lBlockrSiteJoin(compSiteType, i,
                                                 rhoBasisH2[i - 2], compm) / 2;
             };
-        hBlockBlock = (data.ham.blockBlockJoin(thisSiteType, l,
+        hBlockBlock = (data.ham.blockBlockJoin(siteType, l,
                                                data.compBlock -> l, rhoBasisH2,
                                                data.compBlock -> rhoBasisH2)
                        + data.ham.blockBlockJoin(compSiteType, l,
@@ -165,16 +163,16 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
     {
         for(int i = 2, end = std::min(l + 2, farthestNeighborCoupling);
             i <= end; i++)
-            if(data.ham.couplings((thisSiteType + 1) % nSiteTypes, i))
-                hlBlockrSite += data.ham.lBlockrSiteJoin(thisSiteType, i,
+            if(data.ham.couplings((siteType + 1) % nSiteTypes, i))
+                hlBlockrSite += data.ham.lBlockrSiteJoin(siteType, i,
                                                          rhoBasisH2[i - 2], compm);
         for(int i = 2, end = std::min(data.compBlock -> l + 2,
                                       farthestNeighborCoupling); i <= end; i++)
-            if(data.ham.couplings((thisSiteType + i) % nSiteTypes, i))
-                hlSiterBlock += data.ham.lSiterBlockJoin(thisSiteType, i, m,
+            if(data.ham.couplings((siteType + i) % nSiteTypes, i))
+                hlSiterBlock += data.ham.lSiterBlockJoin(siteType, i, m,
                                                          data.compBlock
                                                          -> rhoBasisH2[i - 2]);
-        hBlockBlock = data.ham.blockBlockJoin(thisSiteType, l,
+        hBlockBlock = data.ham.blockBlockJoin(siteType, l,
                                               data.compBlock -> l, rhoBasisH2,
                                               data.compBlock -> rhoBasisH2);
     };
@@ -183,8 +181,8 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
                           + hBlockBlock
                           + hlSiterBlock
                           + kp(Id(md), hEprime);                  // superblock
-    if(data.ham.couplings((thisSiteType + 1) % nSiteTypes, 1))
-        hSuper += data.ham.siteSiteJoin(thisSiteType, m, compm);
+    if(data.ham.couplings((siteType + 1) % nSiteTypes, 1))
+        hSuper += data.ham.siteSiteJoin(siteType, m, compm);
     return HamSolver(hSuper, vectorProductSum(hSprimeQNumList, hEprimeQNumList),
                      scaledTargetQNum, psiGround, data.lancTolerance);
 };
