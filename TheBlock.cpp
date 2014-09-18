@@ -62,8 +62,9 @@ MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
     int siteType = block -> l % nSiteTypes;
          // calculate the position in the lattice basis of the end of the block
     MatrixX_t hprime = kp(block -> hS, Id_d);
-    for(int i = 1; i <= farthestNeighborCoupling; i++)
-        if(block -> l >= i - 1 && ham.BASJ(i - 1, siteType))
+    for(int i = 1, end = std::min(block -> l + 1, farthestNeighborCoupling);
+        i <= end; i++)
+        if(ham.BASJ(i - 1, siteType))
             hprime += ham.blockAdjacentSiteJoin(i, siteType,
                                                 block -> rhoBasisH2[i - 1]);
                                                      // add in longer couplings
@@ -84,12 +85,11 @@ std::vector<std::vector<MatrixX_t>>
         newRhoBasisH2.front().push_back(exactDiag ?
                                         kp(Id(m), siteBasisH2[j]) :
                                         changeBasis(kp(Id(m), siteBasisH2[j])));
-        for(int i = 0, end = farthestNeighborCoupling - 1; i < end; i++)
-            if(l >= i)
-                newRhoBasisH2[i + 1].push_back(exactDiag ?
-                                               kp(rhoBasisH2[i][j], Id_d) :
-                                               changeBasis(kp(rhoBasisH2[i][j],
-                                                              Id_d)));
+        for(int i = 0, end = std::min(l + 1, farthestNeighborCoupling - 1);
+            i < end; i++)
+            newRhoBasisH2[i + 1].push_back(exactDiag ?
+                                           kp(rhoBasisH2[i][j], Id_d) :
+                                           changeBasis(kp(rhoBasisH2[i][j], Id_d)));
     };
     return newRhoBasisH2;
 };
@@ -129,8 +129,9 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
                          // current system size incommensurate with final size?
     {
         int compSiteType = (data.ham.lSys - 4 - l) % nSiteTypes;
-        for(int i = 2; i <= farthestNeighborCoupling; i++)
-            if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
+        for(int i = 2, end = std::min(l + 2, farthestNeighborCoupling);
+            i <= end; i++)
+            if(data.ham.LBRSJ(i - 2, thisSiteType))
             {
                 hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
                                                          rhoBasisH2[i - 2],
@@ -140,9 +141,9 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
                                                 data.compBlock
                                                 -> rhoBasisH2[i - 2]) / 2;
             };
-        for(int i = 2; i <= farthestNeighborCoupling; i++)
-            if(data.compBlock -> l >= i - 2
-               && data.ham.LSRBJ(i - 2, thisSiteType))
+        for(int i = 2, end = std::min(data.compBlock -> l + 2,
+                                      farthestNeighborCoupling); i <= end; i++)
+            if(data.ham.LSRBJ(i - 2, thisSiteType))
             {
                 hlSiterBlock
                     += data.ham.lSiterBlockJoin(i, thisSiteType, m,
@@ -162,13 +163,14 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
     }
     else
     {
-        for(int i = 2; i <= farthestNeighborCoupling; i++)
-            if(l >= i - 2 && data.ham.LBRSJ(i - 2, thisSiteType))
+        for(int i = 2, end = std::min(l + 2, farthestNeighborCoupling);
+            i <= end; i++)
+            if(data.ham.LBRSJ(i - 2, thisSiteType))
                 hlBlockrSite += data.ham.lBlockrSiteJoin(i, thisSiteType,
                                                          rhoBasisH2[i - 2], compm);
-        for(int i = 2; i <= farthestNeighborCoupling; i++)
-            if(data.compBlock -> l >= i - 2
-               && data.ham.LSRBJ(i - 2, thisSiteType))
+        for(int i = 2, end = std::min(data.compBlock -> l + 2,
+                                      farthestNeighborCoupling); i <= end; i++)
+            if(data.ham.LSRBJ(i - 2, thisSiteType))
                 hlSiterBlock += data.ham.lSiterBlockJoin(i, thisSiteType, m,
                                                          data.compBlock
                                                          -> rhoBasisH2[i - 2]);
