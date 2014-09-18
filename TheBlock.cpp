@@ -3,12 +3,12 @@
 
 using namespace Eigen;
 
-TheBlock::TheBlock(int m, const std::vector<int>& qNumList, const MatrixX_t& hS,
+TheBlock::TheBlock(int m, const MatrixX_t& hS, const std::vector<int>& qNumList,
                    const std::vector<std::vector<MatrixX_t>>& rhoBasisH2, int l)
-    : m(m), qNumList(qNumList), hS(hS), rhoBasisH2(rhoBasisH2), l(l) {};
+    : m(m), hS(hS), qNumList(qNumList), rhoBasisH2(rhoBasisH2), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& ham)
-    : m(d), qNumList(ham.oneSiteQNums), hS(MatrixD_t::Zero()), l(0)
+    : m(d), hS(MatrixD_t::Zero()), qNumList(ham.oneSiteQNums), l(0)
 {
     rhoBasisH2.resize(farthestNeighborCoupling);
     rhoBasisH2.front().assign(ham.siteBasisH2.begin(),
@@ -21,7 +21,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
                                                        // expanded system block
     if(data.exactDiag)
-        return TheBlock(m * d, hSprimeQNumList, hSprime,
+        return TheBlock(m * d, hSprime, hSprimeQNumList,
                         createNewRhoBasisH2(data.ham.siteBasisH2, true), l + 1);
       // if near edge of system, no truncation necessary so skip DMRG algorithm
     HamSolver hSuperSolver = createHSuperSolver(data, hSprime, hSprimeQNumList,
@@ -51,7 +51,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
                                           // change the environment block basis
         psiGround.resize(nextBlockm * d * data.beforeCompBlock -> m * d, 1);
     };
-    return TheBlock(nextBlockm, rhoSolver.highestEvecQNums, changeBasis(hSprime),
+    return TheBlock(nextBlockm, changeBasis(hSprime), rhoSolver.highestEvecQNums,
                     createNewRhoBasisH2(data.ham.siteBasisH2, false), l + 1);
                                   // save expanded-block operators in new basis
 };

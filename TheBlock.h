@@ -26,8 +26,8 @@ class TheBlock
         MatrixX_t primeToRhoBasis;                    // change-of-basis matrix
         
         TheBlock(int m = 0,
-                 const std::vector<int>& qNumList = std::vector<int>(),
                  const MatrixX_t& hS = MatrixX_t(),
+                 const std::vector<int>& qNumList = std::vector<int>(),
                  const std::vector<std::vector<MatrixX_t>>& rhoBasisH2 
                      = std::vector<std::vector<MatrixX_t>>(),
                  int l = 0);
@@ -41,9 +41,9 @@ class TheBlock
                        // changes basis during calculation of observables stage
     
     private:
+        MatrixX_t hS;                                      // block Hamiltonian
         std::vector<int> qNumList;
                 // tracks the conserved quantum number of each row/column of hS
-        MatrixX_t hS;                                      // block Hamiltonian
         std::vector<std::vector<MatrixX_t>> rhoBasisH2;
             // density-matrix-basis coupling operators - the first index gives
             // the offset between this block, in which the operator is
