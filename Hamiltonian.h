@@ -13,13 +13,12 @@ class Hamiltonian
 {
     public:
         Hamiltonian();
-        void setParams(const std::vector<double>& couplingConstantsIn,
+        void setParams(const std::vector<double>& couplingConstants,
                        int targetQNumIn, int lSysIn);
         
         EIGEN_MAKE_ALIGNED_OPERATOR_NEW
     
     private:
-        std::vector<double> couplingConstants;
         Eigen::Matrix<double, nSiteTypes, farthestNeighborCoupling + 1> couplings;
         // the row gives the type of site within the lattice basis
         // the column gives the length of the coupling in the stretched-out chain
@@ -45,12 +44,8 @@ class Hamiltonian
                                  const std::vector<std::vector<MatrixX_t>>&
                                      rhoBasisH2,
                                  const std::vector<std::vector<MatrixX_t>>&
-                                     compRhoBasisH2) const,
+                                     compRhoBasisH2) const;
                                                // joins the two blocks together
-                  generalBlockBlockJoin(const std::vector<MatrixX_t>&
-                                            offIRhoBasisH2,
-                                        const std::vector<MatrixX_t>&
-                                            compOffIRhoBasisH2) const;
     
     friend class TheBlock;
 };

@@ -24,10 +24,9 @@ Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
               0., -1.;
 };
 
-void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
+void Hamiltonian::setParams(const std::vector<double>& couplingConstants,
                             int targetQNumIn, int lSysIn)
 {
-    couplingConstants = couplingConstantsIn;
     couplings << 0., jprime,     0., j1, 0., 0., j2,
                  0.,     0., jprime, j1, 0., 0., j2,
                  0., jprime, jprime, 0., 0., 0., 0.;
@@ -82,59 +81,27 @@ MatrixX_t Hamiltonian::blockBlockJoin(int siteType, int l, int comp_l,
                                       const std::vector<std::vector<MatrixX_t>>&
                                           compRhoBasisH2) const
 {
-    MatrixX_t bothBlocks;
-    switch(siteType)
-    {
-        case 0:
+    int m = rhoBasisH2[0][0].rows(),
+        compm = compRhoBasisH2[0][0].rows();
+    MatrixX_t bothBlocks = MatrixX_t::Zero(m * d * compm * d, m * d * compm * d);
+    for(int i = 0, end = std::min(l + 1, farthestNeighborCoupling - 2);
+        i < end; i++)
+        for(int j = 0,
+            end = std::min(comp_l + 1, farthestNeighborCoupling - i - 2);
+            j < end; j++)
         {
-            int m = rhoBasisH2[0][1].rows(),
-                compm = compRhoBasisH2[0][1].rows();
-            bothBlocks = MatrixX_t::Zero(m * d * compm * d, m * d * compm * d);
-            if(l >= 2 && comp_l >= 1)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[2],
-                                                         compRhoBasisH2[1]);
-            if(l >= 1 && comp_l >= 2)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[1],
-                                                         compRhoBasisH2[2]);
-            break;
-        }
-        case 1:
-            bothBlocks = j1 * generalBlockBlockJoin(rhoBasisH2[0],
-                                                    compRhoBasisH2[0]);
-            if(l >= 3)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[3],
-                                                         compRhoBasisH2[0]);
-            if(l >= 2 && comp_l >= 1)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[2],
-                                                         compRhoBasisH2[1]);
-            if(comp_l >= 3)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[0],
-                                                         compRhoBasisH2[3]);
-            break;
-        case 2:
-            bothBlocks = j1 * generalBlockBlockJoin(rhoBasisH2[0],
-                                                    compRhoBasisH2[0]);
-            if(l >= 3)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[3],
-                                                         compRhoBasisH2[0]);
-            if(l >= 1 && comp_l >= 2)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[1],
-                                                         compRhoBasisH2[2]);
-            if(comp_l >= 3)
-                bothBlocks += j2 * generalBlockBlockJoin(rhoBasisH2[0],
-                                                         compRhoBasisH2[3]);
-            break;
-    };
+            double coupling = couplings((siteType + 2 + j) % nSiteTypes,
+                                        i + 3 + j);
+            if(coupling)
+            {
+                MatrixX_t plusMinus = kp(kp(rhoBasisH2[i][0], Id_d),
+                                         kp(compRhoBasisH2[j][0].adjoint(),
+                                            Id_d));
+                bothBlocks
+                    += coupling * (kp(kp(rhoBasisH2[i][1], Id_d),
+                                      kp(rhoBasisH2[j][1], Id_d))
+                                   + 2 * (plusMinus + plusMinus.adjoint()));
+            };
+        };
     return bothBlocks;
-};
-
-MatrixX_t Hamiltonian::generalBlockBlockJoin(const std::vector<MatrixX_t>&
-                                                 offIRhoBasisH2,
-                                             const std::vector<MatrixX_t>&
-                                                 compOffIRhoBasisH2) const
-{
-    MatrixX_t plusMinus = kp(kp(offIRhoBasisSigmaplus, Id_d),
-                             kp(compOffIRhoBasisSigmaplus.adjoint(), Id_d));
-    return kp(kp(offIRhoBasisSigmaz, Id_d), kp(compOffIRhoBasisSigmaz, Id_d))
-           + 2 * (plusMinus + plusMinus.adjoint());
 };
