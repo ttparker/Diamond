@@ -21,23 +21,16 @@ Hamiltonian::Hamiltonian() : oneSiteQNums({1, -1})
     sigmaminus << 0., 0.,
                   1., 0.;
     sigmaz << 1.,  0.,
-              0., -1.;                                 // define Pauli matrices
+              0., -1.;
 };
 
 void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
                             int targetQNumIn, int lSysIn)
 {
     couplingConstants = couplingConstantsIn;
-    BASJ << jprime,     0., j1, 0., 0., j2,
-                0., jprime, j1, 0., 0., j2,
-            jprime, jprime, 0., 0., 0., 0.;
-    LBRSJ << jprime, j1, 0., 0., j2,
-             jprime, 0., 0., 0., 0.,
-                 0., j1, 0., 0., j2;
-    LSRBJ << jprime, j1, 0., 0., j2,
-                 0., j1, 0., 0., j2,
-             jprime, 0., 0., 0., 0.;
-    SSJ = {0., jprime, jprime};
+    couplings << 0., jprime,     0., j1, 0., 0., j2,
+                 0.,     0., jprime, j1, 0., 0., j2,
+                 0., jprime, jprime, 0., 0., 0., 0.;
     targetQNum = targetQNumIn;
     lSys = lSysIn;
 };
@@ -47,7 +40,7 @@ MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int siteType, int jType,
                                              offIRhoBasisH2) const
 {
     MatrixX_t plusMinus = kp(offIRhoBasisSigmaplus, sigmaminus);
-    return BASJ(siteType, jType - 1)
+    return couplings(siteType, jType)
            * (kp(offIRhoBasisSigmaz, sigmaz)
               + 2 * (plusMinus + plusMinus.adjoint()));
 };
@@ -59,7 +52,7 @@ MatrixX_t Hamiltonian::lBlockrSiteJoin(int siteType, int jType,
 {
     MatrixX_t plusMinus = kp(kp(offIRhoBasisSigmaplus, Id(d * compm)),
                              sigmaminus);
-    return LBRSJ(siteType, jType - 2)
+    return couplings((siteType + 1) % nSiteTypes, jType)
            * (kp(kp(offIRhoBasisSigmaz, Id(d * compm)), sigmaz)
               + 2 * (plusMinus + plusMinus.adjoint()));
 };
@@ -69,17 +62,18 @@ MatrixX_t Hamiltonian::lSiterBlockJoin(int siteType, int jType, int m,
                                        compOffIRhoBasisH2) const
 {
     MatrixX_t plusMinus = kp(sigmaplus, compOffIRhoBasisSigmaplus.adjoint());
-    return LSRBJ(siteType, jType - 2)
+    return couplings((siteType + jType) % nSiteTypes, jType)
            * kp(kp(Id(m), kp(sigmaz, compOffIRhoBasisSigmaz)
-                           + 2 * (plusMinus + plusMinus.adjoint())),
+                          + 2 * (plusMinus + plusMinus.adjoint())),
                 Id_d);
 };
 
 MatrixX_t Hamiltonian::siteSiteJoin(int siteType, int m, int compm) const
 {
     MatrixX_t plusMinus = kp(kp(sigmaplus, Id(compm)), sigmaminus);
-    return SSJ[siteType] * kp(Id(m), kp(kp(sigmaz, Id(compm)), sigmaz)
-                                      + 2 * (plusMinus + plusMinus.adjoint()));
+    return couplings((siteType + 1) % nSiteTypes, 1)
+           * kp(Id(m), kp(kp(sigmaz, Id(compm)), sigmaz)
+                          + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
 MatrixX_t Hamiltonian::blockBlockJoin(int siteType, int l, int comp_l,

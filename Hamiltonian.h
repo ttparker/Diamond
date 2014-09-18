@@ -20,15 +20,9 @@ class Hamiltonian
     
     private:
         std::vector<double> couplingConstants;
-        Eigen::Matrix<double, nSiteTypes, farthestNeighborCoupling> BASJ;
-        // these are the arrays of coupling constants for each type of site in
-        // the lattice basis - the acronyms stand for the coupling operators
-        // listed below. The row gives the length of the coupling on the 
-        // stretched-out chain, and the column gives the type of site within
-        // the lattice basis.
-        Eigen::Matrix<double, nSiteTypes, farthestNeighborCoupling - 1> LBRSJ,
-                                                                        LSRBJ;
-        std::vector<double> SSJ;
+        Eigen::Matrix<double, nSiteTypes, farthestNeighborCoupling + 1> couplings;
+        // the row gives the type of site within the lattice basis
+        // the column gives the length of the coupling in the stretched-out chain
         std::vector<int> oneSiteQNums;              // one-site quantum numbers
         int targetQNum,                              // targeted quantum number
             lSys;                                      // current system length
@@ -36,16 +30,15 @@ class Hamiltonian
         
         MatrixX_t blockAdjacentSiteJoin(int siteType, int jType,
                                         const std::vector<MatrixX_t>&
-                                            offIRhoBasisH2)
-                                        const,
+                                            offIRhoBasisH2) const,
                             // jType corresponds to the straightened-out chain,
                             // not the real-space coupling constants
                   lBlockrSiteJoin(int siteType, int jType,
                                   const std::vector<MatrixX_t>& offIRhoBasisH2,
                                   int compm) const,
                   lSiterBlockJoin(int siteType, int jType, int m,
-                                  const std::vector<MatrixX_t>& compOffIRhoBasisH2)
-                                  const,
+                                  const std::vector<MatrixX_t>&
+                                      compOffIRhoBasisH2) const,
                   siteSiteJoin(int siteType, int m, int compm) const,
                                            // joins the two free sites together
                   blockBlockJoin(int siteType, int l, int comp_l,
