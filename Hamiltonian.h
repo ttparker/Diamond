@@ -20,30 +20,30 @@ class Hamiltonian
     
     private:
         std::vector<double> couplingConstants;
-        Eigen::Matrix<double, 6, nSiteTypes> BASJ;
+        Eigen::Matrix<double, nSiteTypes, farthestNeighborCoupling> BASJ;
         // these are the arrays of coupling constants for each type of site in
         // the lattice basis - the acronyms stand for the coupling operators
         // listed below. The row gives the length of the coupling on the 
         // stretched-out chain, and the column gives the type of site within
         // the lattice basis.
-        Eigen::Matrix<double, 5, nSiteTypes> LBRSJ,
-                                             LSRBJ;
+        Eigen::Matrix<double, nSiteTypes, farthestNeighborCoupling - 1> LBRSJ,
+                                                                        LSRBJ;
         std::vector<double> SSJ;
         std::vector<int> oneSiteQNums;              // one-site quantum numbers
         int targetQNum,                              // targeted quantum number
             lSys;                                      // current system length
         vecMatD_t siteBasisH2;                 // site-basis coupling operators
         
-        MatrixX_t blockAdjacentSiteJoin(int jType, int siteType,
+        MatrixX_t blockAdjacentSiteJoin(int siteType, int jType,
                                         const std::vector<MatrixX_t>&
                                             offIRhoBasisH2)
                                         const,
                             // jType corresponds to the straightened-out chain,
                             // not the real-space coupling constants
-                  lBlockrSiteJoin(int jType, int siteType,
+                  lBlockrSiteJoin(int siteType, int jType,
                                   const std::vector<MatrixX_t>& offIRhoBasisH2,
                                   int compm) const,
-                  lSiterBlockJoin(int jType, int siteType, int m,
+                  lSiterBlockJoin(int siteType, int jType, int m,
                                   const std::vector<MatrixX_t>& compOffIRhoBasisH2)
                                   const,
                   siteSiteJoin(int siteType, int m, int compm) const,

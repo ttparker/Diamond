@@ -28,55 +28,48 @@ void Hamiltonian::setParams(const std::vector<double>& couplingConstantsIn,
                             int targetQNumIn, int lSysIn)
 {
     couplingConstants = couplingConstantsIn;
-    BASJ << jprime,     0., jprime,
-                0., jprime, jprime,
-                j1,     j1,     0.,
-                0.,     0.,     0.,
-                0.,     0.,     0.,
-                j2,     j2,     0.;
-    LBRSJ << jprime, jprime, 0.,
-                 j1,     0., j1,
-                 0.,     0., 0.,
-                 0.,     0., 0.,
-                 j2,     0., j2;
-    LSRBJ << jprime, 0., jprime,
-                 j1, j1,     0.,
-                 0., 0.,     0.,
-                 0., 0.,     0.,
-                 j2, j2,     0.;
+    BASJ << jprime,     0., j1, 0., 0., j2,
+                0., jprime, j1, 0., 0., j2,
+            jprime, jprime, 0., 0., 0., 0.;
+    LBRSJ << jprime, j1, 0., 0., j2,
+             jprime, 0., 0., 0., 0.,
+                 0., j1, 0., 0., j2;
+    LSRBJ << jprime, j1, 0., 0., j2,
+                 0., j1, 0., 0., j2,
+             jprime, 0., 0., 0., 0.;
     SSJ = {0., jprime, jprime};
     targetQNum = targetQNumIn;
     lSys = lSysIn;
 };
 
-MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int jType, int siteType,
+MatrixX_t Hamiltonian::blockAdjacentSiteJoin(int siteType, int jType,
                                              const std::vector<MatrixX_t>&
                                              offIRhoBasisH2) const
 {
     MatrixX_t plusMinus = kp(offIRhoBasisSigmaplus, sigmaminus);
-    return BASJ(jType - 1, siteType)
+    return BASJ(siteType, jType - 1)
            * (kp(offIRhoBasisSigmaz, sigmaz)
               + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixX_t Hamiltonian::lBlockrSiteJoin(int jType, int siteType,
+MatrixX_t Hamiltonian::lBlockrSiteJoin(int siteType, int jType,
                                        const std::vector<MatrixX_t>&
                                            offIRhoBasisH2,
                                        int compm) const
 {
     MatrixX_t plusMinus = kp(kp(offIRhoBasisSigmaplus, Id(d * compm)),
                              sigmaminus);
-    return LBRSJ(jType - 2, siteType)
+    return LBRSJ(siteType, jType - 2)
            * (kp(kp(offIRhoBasisSigmaz, Id(d * compm)), sigmaz)
               + 2 * (plusMinus + plusMinus.adjoint()));
 };
 
-MatrixX_t Hamiltonian::lSiterBlockJoin(int jType, int siteType, int m,
+MatrixX_t Hamiltonian::lSiterBlockJoin(int siteType, int jType, int m,
                                        const std::vector<MatrixX_t>&
                                        compOffIRhoBasisH2) const
 {
     MatrixX_t plusMinus = kp(sigmaplus, compOffIRhoBasisSigmaplus.adjoint());
-    return LSRBJ(jType - 2, siteType)
+    return LSRBJ(siteType, jType - 2)
            * kp(kp(Id(m), kp(sigmaz, compOffIRhoBasisSigmaz)
                            + 2 * (plusMinus + plusMinus.adjoint())),
                 Id_d);
