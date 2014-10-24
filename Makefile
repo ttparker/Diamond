@@ -1,6 +1,6 @@
 PROG = Diamond
 CXX = g++
-CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -march=native -I ~/Eigen_3.2.0 $(DEBUG)
+CXXFLAGS = -Wall -Wextra -O3 -std=c++11 -march=native -I ~/Eigen_3.2.2 $(DEBUG)
 LIBS = -llapack
 OBJS = FinalSuperblock.o ESolver.o FreeFunctions.o Lanczos.o main.o TheBlock.o $(PROG).o
 COMMONHS1 = GlobalHamiltonianParameters.h main.h
