@@ -17,7 +17,7 @@ struct stepData
     bool infiniteStage;
     double lancTolerance;  // max deviation from 1 of dot product of successive
                            // Lanczos iterations' ground state vectors
-    int mMax;                                             // max bond dimension
+    int mMax;                              // max size of effective Hamiltonian
     TheBlock* beforeCompBlock;     // next smaller block than complementary one
 };
 
