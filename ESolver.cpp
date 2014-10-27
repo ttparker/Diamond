@@ -74,8 +74,7 @@ DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
         for(int i = 0, end = sectors[qNum].multiplicity; i < end; i++)
             indexedEvals.insert(std::pair<double, int>(sectors[qNum].solver
                                                        .eigenvalues()(i), qNum));
-             // add indexed eigenvalues to list - note that degenerate-weighted
-             // DM eigenstates will be ordered by increasing quantum number
+                                             // add indexed eigenvalues to list
     };
     int matSize = mat.rows(),
         evecsToKeep;
