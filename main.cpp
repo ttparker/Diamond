@@ -107,8 +107,8 @@ int main()
         for(double couplingConstant : couplingConstants)
             fileout << " " << couplingConstant;
          fileout << "\nTargeted quantum number: " << targetQNum
-                 << "\nBond dimension: " << data.mMax << "\nNumber of sweeps: "
-                 << nSweeps << "\nLanczos tolerances:";
+                 << "\nMaximum bond dimension: " << data.mMax
+                 << "\nNumber of sweeps: " << nSweeps << "\nLanczos tolerances:";
         for(double groundStateErrorTolerance : groundStateErrorTolerances)
             fileout << " " << groundStateErrorTolerance;
         fileout << std::endl << std::endl;
@@ -132,15 +132,14 @@ int main()
         {
             if(skips + 1 == lSFinal && runningKeptStates == data.mMax * d)
             {
-                std::cout << "Note: the bond dimension is large enough to "
-                          << "perform exact diagonalization." << std::endl;
+                std::cout << "Note: the maximum bond dimension is large enough "
+                          << "to perform exact diagonalization." << std::endl;
                 completeED = true;
             }
             else
             {
-                std::cout << "Error: the bond dimension is larger than "
-                          << "required for exact diagonalization."
-                          << std::endl;
+                std::cout << "Error: the maximum bond dimension is larger than "
+                          << "required for exact diagonalization." << std::endl;
                 continue;
             };
         };

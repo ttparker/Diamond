@@ -33,6 +33,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList,
                        data.mMax);           // find density matrix eigenstates
     primeToRhoBasis = rhoSolver.highestEvecs; // construct change-of-basis matrix
+    int nextBlockm = primeToRhoBasis.cols();
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
     {
         for(int sPrimeIndex = 0; sPrimeIndex < md; sPrimeIndex++)
@@ -46,12 +47,12 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
         };
         psiGround = primeToRhoBasis.adjoint() * psiGround; 
                                       // change the expanded system block basis
-        psiGround.resize(data.mMax * d, compm);
+        psiGround.resize(nextBlockm * d, compm);
         psiGround *= data.beforeCompBlock -> primeToRhoBasis.transpose();
                                           // change the environment block basis
-        psiGround.resize(data.mMax * d * data.beforeCompBlock -> m * d, 1);
+        psiGround.resize(nextBlockm * d * data.beforeCompBlock -> m * d, 1);
     };
-    return TheBlock(data.mMax, rhoSolver.highestEvecQNums, changeBasis(hSprime),
+    return TheBlock(nextBlockm, rhoSolver.highestEvecQNums, changeBasis(hSprime),
                     createNewRhoBasisH2s(data.ham.siteBasisH2, false), l + 1);
                                   // save expanded-block operators in new basis
 };
