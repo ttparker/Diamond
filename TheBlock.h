@@ -44,6 +44,7 @@ class TheBlock
     
     private:
         MatrixX_t hS;                                      // block Hamiltonian
+        int siteType;                        // which site in the lattice basis
         std::vector<int> qNumList;
                 // tracks the conserved quantum number of each row/column of hS
         std::vector<MatrixX_t> off0RhoBasisH2,

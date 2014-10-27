@@ -4,11 +4,12 @@ using namespace Eigen;
 
 TheBlock::TheBlock(int m, const MatrixX_t& hS, const std::vector<int>& qNumList,
                    const matPair newRhoBasisH2s, int l)
-    : m(m), hS(hS), qNumList(qNumList), off0RhoBasisH2(newRhoBasisH2s.first),
+    : m(m), hS(hS), siteType(l % nSiteTypes), qNumList(qNumList),
+      off0RhoBasisH2(newRhoBasisH2s.first),
       off1RhoBasisH2(newRhoBasisH2s.second), l(l) {};
 
 TheBlock::TheBlock(const Hamiltonian& ham)
-    : m(d), hS(MatrixD_t::Zero()), qNumList(ham.oneSiteQNums), l(0)
+    : m(d), hS(MatrixD_t::Zero()), siteType(0), qNumList(ham.oneSiteQNums), l(0)
 {
     off0RhoBasisH2.assign(ham.siteBasisH2.begin(),
                           ham.siteBasisH2.begin() + nIndepCouplingOperators);
@@ -60,12 +61,11 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
 MatrixX_t TheBlock::createHprime(const TheBlock* block, const Hamiltonian& ham,
                                  std::vector<int>& hPrimeQNumList) const
 {
-    int siteType = block -> l % nSiteTypes;
     MatrixX_t hPrime = kp(block -> hS, Id_d)
-                       + ham.blockAdjacentSiteJoin(1, siteType,
+                       + ham.blockAdjacentSiteJoin(1, block -> siteType,
                                                    block -> off0RhoBasisH2);
     if(l != 0)
-        hPrime += ham.blockAdjacentSiteJoin(2, siteType,
+        hPrime += ham.blockAdjacentSiteJoin(2, block -> siteType,
                                             block -> off1RhoBasisH2);
     hPrimeQNumList = vectorProductSum(block -> qNumList, ham.oneSiteQNums);
                                           // add in quantum numbers of new site
@@ -114,13 +114,12 @@ HamSolver TheBlock::createHSuperSolver(const stepData& data,
         hEprime = createHprime(data.compBlock, data.ham, hEprimeQNumList);
         scaledTargetQNum = data.ham.targetQNum;
     };
-    int compm = data.compBlock -> m,
-        thisSiteType = l % nSiteTypes;
+    int compm = data.compBlock -> m;
     MatrixX_t hSuper = kp(hSprime, Id(compm * d))
-                       + data.ham.lBlockrSiteJoin(thisSiteType, off0RhoBasisH2,
+                       + data.ham.lBlockrSiteJoin(siteType, off0RhoBasisH2,
                                                   compm)
-                       + data.ham.siteSiteJoin(thisSiteType, m, compm)
-                       + data.ham.lSiterBlockJoin(thisSiteType, m,
+                       + data.ham.siteSiteJoin(siteType, m, compm)
+                       + data.ham.lSiterBlockJoin(siteType, m,
                                                   data.compBlock
                                                   -> off0RhoBasisH2)
                        + kp(Id(m * d), hEprime);                  // superblock
