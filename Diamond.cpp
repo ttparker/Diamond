@@ -99,7 +99,7 @@ MatrixX_t Hamiltonian::blockBlockJoin(int siteType, int l, int comp_l,
                                             Id_d));
                 bothBlocks
                     += coupling * (kp(kp(rhoBasisH2[i][1], Id_d),
-                                      kp(rhoBasisH2[j][1], Id_d))
+                                      kp(compRhoBasisH2[j][1], Id_d))
                                    + 2 * (plusMinus + plusMinus.adjoint()));
             };
         };
