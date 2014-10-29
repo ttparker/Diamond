@@ -16,7 +16,8 @@ TheBlock::TheBlock(const Hamiltonian& ham)
                               ham.siteBasisH2.begin() + nIndepCouplingOperators);
 };
 
-TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
+TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround,
+                             double& cumulativeTruncationError)
 {
     std::vector<int> hSprimeQNumList;
     MatrixX_t hSprime = createHprime(this, data.ham, hSprimeQNumList);
@@ -32,6 +33,7 @@ TheBlock TheBlock::nextBlock(const stepData& data, rmMatrixX_t& psiGround)
     psiGround.resize(m * d, data.compBlock -> m * d);
     DMSolver rhoSolver(psiGround * psiGround.adjoint(), hSprimeQNumList,
                        data.mMax);           // find density matrix eigenstates
+    cumulativeTruncationError += rhoSolver.truncationError;
     primeToRhoBasis = rhoSolver.highestEvecs; // construct change-of-basis matrix
     int nextBlockm = primeToRhoBasis.cols();
     if(!data.infiniteStage) // modify psiGround to predict the next ground state
