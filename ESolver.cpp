@@ -62,6 +62,7 @@ HamSolver::HamSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
 
 DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                    int maxEvecsToKeep)
+    : truncationError(0.)
 {
     std::map<int, Sector> sectors;        // key is the sector's quantum number
     std::multimap<double, int> indexedEvals;         // eigenvalue, then sector
@@ -78,12 +79,12 @@ DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
     };
     int matSize = mat.rows(),
         evecsToKeep;
+    auto weight = indexedEvals.crbegin();
     if(matSize <= maxEvecsToKeep)
         evecsToKeep = matSize;
     else
     {
         evecsToKeep = maxEvecsToKeep;
-        auto weight = indexedEvals.crbegin();
         std::advance(weight, maxEvecsToKeep - 1);
         for(; evecsToKeep >= 1
               && (weight -> first == 0
@@ -103,6 +104,9 @@ DMSolver::DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                       << "eigenspace, lowering cutoff to " << evecsToKeep
                       << " states." << std::endl;
     };
+    weight++;                    // now points to first truncated DM eigenvalue
+    for(auto end = indexedEvals.crend(); weight != end; weight++)
+        truncationError += weight -> first;
     highestEvecQNums.reserve(evecsToKeep);
     highestEvecs = MatrixX_t::Zero(matSize, evecsToKeep);
     auto currentIndexedEval = indexedEvals.crbegin();

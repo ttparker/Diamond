@@ -33,7 +33,8 @@ class TheBlock
                  const matPair newRhoBasisH2s = matPair(),
                  int l = 0);
         TheBlock(const Hamiltonian& ham);
-        TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround);
+        TheBlock nextBlock(const stepData& data, rmMatrixX_t& psiGround,
+                           double& cumulativeTruncationError);
                                                      // performs each DMRG step
         FinalSuperblock createHSuperFinal(const stepData& data,
                                           rmMatrixX_t& psiGround, int skips)

@@ -43,6 +43,7 @@ class DMSolver
     private:
         MatrixX_t highestEvecs;
         std::vector<int> highestEvecQNums;
+        double truncationError;
         
         DMSolver(const MatrixX_t& mat, const std::vector<int>& qNumList,
                  int maxEvecsToKeep);
