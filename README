@@ -6,9 +6,9 @@ This is a DMRG code for finding the ground state of a diamond chain with open bo
 
 [System name].cpp: specifies the types of nearest-neighbor and next-nearest-neighbor couplings.  The specific values of the coupling constants and the targeted conserved quantum number, however, are read in from ./Input/Input at runtime.
 
-GlobalHamiltonianParameters.h: specifies the size of the single-site Hilbert space, the number of distinct coupling constants, the number of independent coupling operators, and whether the single-site observables' matrices have real (e.g. sigma_x or sigma_z) or complex (e.g. sigma_y) elements.  Note that the format of the matrices listed in ObservableOps.h depends on this choice.
+GlobalHamiltonianParameters.h: specifies the size of the single-site Hilbert space, the number of distinct coupling constants, the number of independent coupling operators, the number of sites in the lattice basis, and whether the single-site observables' matrices have real (e.g. sigma_x or sigma_z) or complex (e.g. sigma_y) elements.  Note that the format of the matrices listed in ObservableOps.h depends on this choice.
 
-GlobalPrecisionParameters.h: specifies the minimum and maximum number of allowed Lanczos iterations and the threshhold at which to round observables to zero.
+GlobalPrecisionParameters.h: specifies the minimum and maximum number of allowed Lanczos iterations, the "fallback" Lanczos convergence to accept if the algorithm has constructed the entire column space and still not converged, the relative difference between consecutive density-matrix eigenvalues to be considered nondegenerate,  and the threshhold at which to round observables to zero.
 
 ObservableOps.h: lists all the single-site observable operators that will used in finding expectation values of observables (e.g. the Pauli matrices).
 
