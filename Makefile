@@ -14,7 +14,7 @@ $(PROG): $(OBJS)
 
 FinalSuperblock.o: $(COMMONHS2)
 
-ESolver.o: $(COMMONHS1) ESolver.h GlobalPrecisionParameters.h
+ESolver.o: $(COMMONHS2)
 
 FreeFunctions.o: $(COMMONHS1) Hamiltonian.h TheBlock.h FinalSuperblock.h ESolver.h GlobalPrecisionParameters.h
 
